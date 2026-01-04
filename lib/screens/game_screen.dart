@@ -4,6 +4,7 @@ import 'dart:math';
 import '../config/game_config.dart';
 import '../engine/physics_engine.dart';
 import '../engine/terrain_generator.dart';
+import '../engine/obstacle_generator.dart';
 import '../state/game_state_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   late AnimationController _animationController;
   late PhysicsEngine _physics;
   late TerrainGenerator _terrain;
+  late ObstacleGenerator _obstacles;
   
   int _activeTouches = 0;
   bool _isRefueling = false;
@@ -41,6 +43,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       baseHeight: GameConfig.groundBaseHeight,
     );
     
+    _obstacles = ObstacleGenerator(startX: 500.0);
+    
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(days: 365),
@@ -59,6 +63,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       // Update physics (60 FPS target)
       _physics.update(1 / 60);
       
+      // Update obstacles
+      _obstacles.update(_physics.planeX, 1000.0);
+      
       // Update camera to follow plane
       _cameraX = _physics.planeX - 200;
       
@@ -70,6 +77,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       double groundHeight = _terrain.getHeight(_physics.planeX);
       if (_physics.isCrashed(groundHeight)) {
         _endGame(GameOverReason.crashed);
+      }
+      
+      // Check collision with obstacles
+      for (var obstacle in _obstacles.obstacles) {
+        if (_physics.checkObstacleCollision(obstacle)) {
+          obstacle.isActive = false;
+          _endGame(GameOverReason.crashed);
+          break;
+        }
       }
       
       // Check out of fuel
@@ -150,7 +166,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               _handleJettison();
             }
           },
-          child: Container(
+          child: Conobstacles: _obstacles,
+                    tainer(
             width: size.width,
             height: size.height,
             color: const Color(0xFF87CEEB),
@@ -346,6 +363,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 class GamePainter extends CustomPainter {
   final PhysicsEngine physics;
   final TerrainGenerator terrain;
+  final ObstacleGenerator obstacles;
   final double cameraX;
   final Size screenSize;
   final bool isRefueling;
@@ -353,6 +371,7 @@ class GamePainter extends CustomPainter {
   GamePainter({
     required this.physics,
     required this.terrain,
+    required this.obstacles,
     required this.cameraX,
     required this.screenSize,
     required this.isRefueling,
@@ -369,6 +388,9 @@ class GamePainter extends CustomPainter {
     
     // Draw terrain
     _drawTerrain(canvas, size, scaleX, scaleY);
+    
+    // Draw obstacles
+    _drawObstacles(canvas, size, scaleX, scaleY);
     
     // Draw plane
     _drawPlane(canvas, size, scaleX, scaleY);
@@ -468,6 +490,172 @@ class GamePainter extends CustomPainter {
       Offset(screenX, screenY),
       fuelPaint,
     );
+  }
+  
+  void _drawObstacles(Canvas canvas, Size size, double scaleX, double scaleY) {
+    // Get obstacles in visible range
+    double viewMinX = cameraX - 100;
+    double viewMaxX = cameraX + (size.width / scaleX) + 100;
+    
+    var visibleObstacles = obstacles.getObstaclesInRange(viewMinX, viewMaxX);
+    
+    for (var obstacle in visibleObstacles) {
+      if (!obstacle.isActive) continue;
+      
+      double screenX = (obstacle.x - cameraX) * scaleX;
+      double screenY = size.height - (obstacle.y * scaleY);
+      double screenWidth = obstacle.width * scaleX;
+      double screenHeight = obstacle.height * scaleY;
+      
+      switch (obstacle.type) {
+        case ObstacleType.mountain:
+          _drawMountain(canvas, screenX, screenY, screenWidth, screenHeight);
+          break;
+        case ObstacleType.bird:
+          _drawBird(canvas, screenX, screenY, screenWidth, screenHeight);
+          break;
+        case ObstacleType.missile:
+          _drawMissile(canvas, screenX, screenY, screenWidth, screenHeight);
+          break;
+        case ObstacleType.plane:
+          _drawOtherPlane(canvas, screenX, screenY, screenWidth, screenHeight);
+          break;
+        case ObstacleType.alien:
+          _drawAlien(canvas, screenX, screenY, screenWidth, screenHeight);
+          break;
+      }
+    }
+  }
+  
+  void _drawMountain(Canvas canvas, double x, double y, double width, double height) {
+    final paint = Paint()
+      ..color = Colors.grey[700]!
+      ..style = PaintingStyle.fill;
+    
+    final path = Path();
+    path.moveTo(x, y);
+    path.lineTo(x + width / 2, y - height);
+    path.lineTo(x + width, y);
+    path.close();
+    
+    canvas.drawPath(path, paint);
+    
+    // Snow cap
+    final snowPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    
+    final snowPath = Path();
+    snowPath.moveTo(x + width / 2 - 15, y - height + 30);
+    snowPath.lineTo(x + width / 2, y - height);
+    snowPath.lineTo(x + width / 2 + 15, y - height + 30);
+    snowPath.close();
+    
+    canvas.drawPath(snowPath, snowPaint);
+  }
+  
+  void _drawBird(Canvas canvas, double x, double y, double width, double height) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    
+    // Bird "V" shape
+    final path = Path();
+    path.moveTo(x, y - height / 2);
+    path.lineTo(x + width / 2, y);
+    path.lineTo(x + width, y - height / 2);
+    
+    canvas.drawPath(path, paint);
+  }
+  
+  void _drawMissile(Canvas canvas, double x, double y, double width, double height) {
+    final bodyPaint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+    
+    // Missile body
+    canvas.drawRect(
+      Rect.fromLTWH(x, y - height / 2, width * 0.7, height),
+      bodyPaint,
+    );
+    
+    // Missile nose cone
+    final nosePaint = Paint()
+      ..color = Colors.yellow
+      ..style = PaintingStyle.fill;
+    
+    final nosePath = Path();
+    nosePath.moveTo(x + width * 0.7, y - height / 2);
+    nosePath.lineTo(x + width, y);
+    nosePath.lineTo(x + width * 0.7, y + height / 2);
+    nosePath.close();
+    
+    canvas.drawPath(nosePath, nosePaint);
+    
+    // Flame trail
+    final flamePaint = Paint()
+      ..color = Colors.orange.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawCircle(Offset(x - 5, y), 8, flamePaint);
+  }
+  
+  void _drawOtherPlane(Canvas canvas, double x, double y, double width, double height) {
+    final paint = Paint()
+      ..color = Colors.grey
+      ..style = PaintingStyle.fill;
+    
+    // Plane body
+    final path = Path();
+    path.moveTo(x + width, y);
+    path.lineTo(x + width * 0.2, y + height / 3);
+    path.lineTo(x, y);
+    path.lineTo(x + width * 0.2, y - height / 3);
+    path.close();
+    
+    canvas.drawPath(path, paint);
+    
+    // Wings
+    canvas.drawRect(
+      Rect.fromLTWH(x + width * 0.3, y - height / 2, width * 0.1, height),
+      paint,
+    );
+  }
+  
+  void _drawAlien(Canvas canvas, double x, double y, double width, double height) {
+    final ufoBodyPaint = Paint()
+      ..color = Colors.purple
+      ..style = PaintingStyle.fill;
+    
+    // UFO dome
+    canvas.drawOval(
+      Rect.fromLTWH(x + width * 0.2, y - height * 0.7, width * 0.6, height * 0.5),
+      ufoBodyPaint,
+    );
+    
+    // UFO base
+    final basePaint = Paint()
+      ..color = Colors.purple[300]!
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawOval(
+      Rect.fromLTWH(x, y - height * 0.3, width, height * 0.4),
+      basePaint,
+    );
+    
+    // Lights
+    final lightPaint = Paint()
+      ..color = Colors.yellow
+      ..style = PaintingStyle.fill;
+    
+    for (int i = 0; i < 3; i++) {
+      canvas.drawCircle(
+        Offset(x + width * (0.25 + i * 0.25), y),
+        3,
+        lightPaint,
+      );
+    }
   }
   
   @override

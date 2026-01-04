@@ -6,26 +6,30 @@ class GameConfig {
   static const double baseThrust = 12.0;
   static const double maxThrust = 20.0;
   static const double idleThrust = 2.0;
-  static const double fuelBurnRate = 0.5;
+  static const double fuelBurnRate = 1.5;
   static const double horizontalSpeed = 100.0;
-  
+
+  // Obstacle settings
+  static const double obstacleMinDistance = 200.0;
+  static const double obstacleMaxDistance = 400.0;
+
   // Terrain generation
   static const double noiseFrequency = 0.02;
   static const double noiseAmplitude = 300.0;
   static const double groundBaseHeight = 100.0;
-  
+
   // Cloud ceiling
   static const double cloudCeilingHeight = 600.0;
   static const double lightningDamage = 2.0;
-  
+
   // Screen scaling
   static const double gameWorldHeight = 800.0;
   static const double gameWorldWidth = 1200.0;
-  
+
   // Visual feedback
   static const bool enableVibration = true;
   static const int vibrationDuration = 100;
-  
+
   // Daily events (can be loaded from server)
   static double windForce = 0.0;
   static double bonusGoldMultiplier = 1.0;
@@ -45,7 +49,7 @@ class CargoClass {
   final int reward;
   final String description;
   final bool explosive;
-  
+
   const CargoClass({
     required this.type,
     required this.name,
@@ -54,7 +58,7 @@ class CargoClass {
     required this.description,
     this.explosive = false,
   });
-  
+
   static const List<CargoClass> all = [
     CargoClass(
       type: CargoType.mail,
@@ -86,9 +90,52 @@ class CargoClass {
       explosive: true,
     ),
   ];
-  
+
   static CargoClass getByType(CargoType type) {
     return all.firstWhere((cargo) => cargo.type == type);
+  }
+}
+
+enum ObstacleType {
+  mountain,
+  bird,
+  missile,
+  plane,
+  alien,
+}
+
+class Obstacle {
+  final ObstacleType type;
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+  final double speed;
+  bool isActive;
+
+  Obstacle({
+    required this.type,
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+    this.speed = 0.0,
+    this.isActive = true,
+  });
+
+  void update(double deltaTime) {
+    // Some obstacles move (birds, missiles, aliens)
+    // Mountains and planes are static
+  }
+
+  bool collidesWith(
+      double planeX, double planeY, double planeWidth, double planeHeight) {
+    if (!isActive) return false;
+
+    return planeX < x + width &&
+        planeX + planeWidth > x &&
+        planeY < y + height &&
+        planeY + planeHeight > y;
   }
 }
 
@@ -100,7 +147,7 @@ class PlaneStats {
   final double maxFuelCapacity;
   final int price;
   final String description;
-  
+
   const PlaneStats({
     required this.name,
     required this.baseWeight,
@@ -110,7 +157,7 @@ class PlaneStats {
     required this.price,
     required this.description,
   });
-  
+
   static const List<PlaneStats> all = [
     PlaneStats(
       name: 'Sparrow',
