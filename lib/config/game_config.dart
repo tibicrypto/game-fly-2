@@ -113,6 +113,12 @@ class Obstacle {
   final double speed;
   bool isActive;
 
+  // Random movement properties
+  double velocityX;
+  double velocityY;
+  double moveTimer;
+  double targetY;
+
   Obstacle({
     required this.type,
     required this.x,
@@ -121,11 +127,19 @@ class Obstacle {
     required this.height,
     this.speed = 0.0,
     this.isActive = true,
-  });
+    this.velocityX = 0.0,
+    this.velocityY = 0.0,
+    this.moveTimer = 0.0,
+    double? targetY,
+  }) : targetY = targetY ?? y;
 
   void update(double deltaTime) {
-    // Some obstacles move (birds, missiles, aliens)
-    // Mountains and planes are static
+    // Update position based on velocity
+    x += velocityX * deltaTime;
+    y += velocityY * deltaTime;
+
+    // Update timer for movement changes
+    moveTimer -= deltaTime;
   }
 
   bool collidesWith(
