@@ -89,7 +89,7 @@ class PhysicsEngine {
     if (planeY > GameConfig.cloudCeilingHeight) {
       hitLightning();
       planeY = GameConfig.cloudCeilingHeight;
-      velocityY = -abs(velocityY) * 0.5; // Bounce down
+      velocityY = -velocityY.abs() * 0.5; // Bounce down
     }
     
     // Prevent going below ground (temporary check)

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 
 class GameOverScreen extends StatelessWidget {
-  const GameOverScreen({Key? key}) : super(key: key);
+  const GameOverScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'dart:math';
 import '../config/game_config.dart';
@@ -9,7 +8,7 @@ import '../state/game_state_manager.dart';
 import 'package:provider/provider.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({Key? key}) : super(key: key);
+  const GameScreen({super.key});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -110,9 +109,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
           cargo: null,
           initialFuel: _physics.fuel,
         );
-        _physics.planeX = (_physics as PhysicsEngine).planeX;
-        _physics.planeY = (_physics as PhysicsEngine).planeY;
-        _physics.velocityY = (_physics as PhysicsEngine).velocityY;
+        _physics.planeX = (_physics).planeX;
+        _physics.planeY = (_physics).planeY;
+        _physics.velocityY = (_physics).velocityY;
       });
       _vibrate(duration: 300);
     }
@@ -382,7 +381,7 @@ class GamePainter extends CustomPainter {
   
   void _drawClouds(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey[300]!.withOpacity(0.5)
+      ..color = Colors.grey[300]!.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
     
     // Draw cloud layer at top
@@ -459,7 +458,7 @@ class GamePainter extends CustomPainter {
     double screenY = size.height - (physics.planeY * scaleY);
     
     final fuelPaint = Paint()
-      ..color = Colors.yellow.withOpacity(0.6)
+      ..color = Colors.yellow.withValues(alpha: 0.6)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
     

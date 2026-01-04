@@ -4,7 +4,7 @@ import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
 
 class PlaneSelectionScreen extends StatelessWidget {
-  const PlaneSelectionScreen({Key? key}) : super(key: key);
+  const PlaneSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -186,8 +186,8 @@ class PlaneSelectionScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
               colors: isSelected
-                  ? [Colors.green.withOpacity(0.2), Colors.white]
-                  : [Colors.white, Colors.grey.withOpacity(0.1)],
+                  ? [Colors.green.withValues(alpha: 0.2), Colors.white]
+                  : [Colors.white, Colors.grey.withValues(alpha: 0.1)],
             ),
           ),
           child: Column(

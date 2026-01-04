@@ -24,7 +24,7 @@ class TerrainGenerator {
     }
     
     // Generate height using Perlin noise
-    double noiseValue = perlin.getPerlin2(x * frequency, 0);
+    double noiseValue = perlin.getNoise2(x * frequency, 0);
     double height = baseHeight + (noiseValue * amplitude);
     
     // Ensure non-negative height

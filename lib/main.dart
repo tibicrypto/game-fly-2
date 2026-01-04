@@ -28,7 +28,7 @@ void main() {
 }
 
 class SkyHaulerApp extends StatelessWidget {
-  const SkyHaulerApp({Key? key}) : super(key: key);
+  const SkyHaulerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class SkyHaulerApp extends StatelessWidget {
 }
 
 class GameNavigator extends StatelessWidget {
-  const GameNavigator({Key? key}) : super(key: key);
+  const GameNavigator({super.key});
 
   @override
   Widget build(BuildContext context) {

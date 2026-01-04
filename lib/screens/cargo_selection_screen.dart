@@ -4,7 +4,7 @@ import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
 
 class CargoSelectionScreen extends StatelessWidget {
-  const CargoSelectionScreen({Key? key}) : super(key: key);
+  const CargoSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +81,7 @@ class CargoSelectionScreen extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [Colors.white, difficultyColor.withOpacity(0.1)],
+              colors: [Colors.white, difficultyColor.withValues(alpha: 0.1)],
             ),
           ),
           child: Column(
@@ -160,7 +160,7 @@ class CargoSelectionScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color),
       ),
