@@ -106,8 +106,8 @@ enum ObstacleType {
 
 class Obstacle {
   final ObstacleType type;
-  final double x;
-  final double y;
+  double x;
+  double y;
   final double width;
   final double height;
   final double speed;

@@ -166,8 +166,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               _handleJettison();
             }
           },
-          child: Conobstacles: _obstacles,
-                    tainer(
+          child: Container(
             width: size.width,
             height: size.height,
             color: const Color(0xFF87CEEB),
@@ -179,6 +178,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   painter: GamePainter(
                     physics: _physics,
                     terrain: _terrain,
+                    obstacles: _obstacles,
                     cameraX: _cameraX,
                     screenSize: size,
                     isRefueling: _isRefueling,
