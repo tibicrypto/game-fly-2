@@ -13,6 +13,10 @@ class GameConfig {
   static const double obstacleMinDistance = 200.0;
   static const double obstacleMaxDistance = 400.0;
 
+  // Difficulty scaling
+  static const double difficultyIncreaseRate = 0.001; // Difficulty per meter
+  static const double maxDifficultyMultiplier = 3.0; // Cap at 3x difficulty
+
   // Terrain generation
   static const double noiseFrequency = 0.02;
   static const double noiseAmplitude = 300.0;

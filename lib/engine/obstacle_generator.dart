@@ -5,6 +5,7 @@ class ObstacleGenerator {
   final Random _random = Random();
   final List<Obstacle> _obstacles = [];
   double _lastObstacleX = 0;
+  double _currentDistance = 0;
 
   List<Obstacle> get obstacles => _obstacles;
 
@@ -12,7 +13,17 @@ class ObstacleGenerator {
     _lastObstacleX = startX;
   }
 
+  // Calculate difficulty multiplier based on distance
+  double _getDifficultyMultiplier() {
+    double multiplier =
+        1.0 + (_currentDistance * GameConfig.difficultyIncreaseRate);
+    return multiplier.clamp(1.0, GameConfig.maxDifficultyMultiplier);
+  }
+
   void update(double currentX, double viewDistance) {
+    // Update current distance
+    _currentDistance = currentX;
+
     // Remove obstacles that are far behind the camera
     _obstacles.removeWhere((obstacle) => obstacle.x < currentX - 500);
 
@@ -91,8 +102,11 @@ class ObstacleGenerator {
   }
 
   void _generateNextObstacle() {
-    double minDist = GameConfig.obstacleMinDistance;
-    double maxDist = GameConfig.obstacleMaxDistance;
+    double difficulty = _getDifficultyMultiplier();
+
+    // Distance between obstacles decreases as difficulty increases
+    double minDist = GameConfig.obstacleMinDistance / difficulty;
+    double maxDist = GameConfig.obstacleMaxDistance / difficulty;
 
     // Random distance to next obstacle with more variation
     double distance = minDist + _random.nextDouble() * (maxDist - minDist);
@@ -104,20 +118,31 @@ class ObstacleGenerator {
     }
     _lastObstacleX += distance;
 
-    // Random obstacle type (weighted probabilities)
+    // Random obstacle type with difficulty-based probabilities
     ObstacleType type;
     double rand = _random.nextDouble();
 
-    if (rand < 0.35) {
-      type = ObstacleType.bird; // 35% chance
-    } else if (rand < 0.60) {
-      type = ObstacleType.mountain; // 25% chance
-    } else if (rand < 0.75) {
-      type = ObstacleType.plane; // 15% chance
-    } else if (rand < 0.90) {
-      type = ObstacleType.missile; // 15% chance
+    // As difficulty increases, more dangerous obstacles appear
+    // Early game (difficulty 1.0): Easy obstacles
+    // Late game (difficulty 3.0): More missiles and aliens
+    double birdChance = 0.35 - (difficulty - 1.0) * 0.1; // 35% -> 15%
+    double mountainChance =
+        birdChance + (0.25 - (difficulty - 1.0) * 0.05); // 25% -> 15%
+    double planeChance = mountainChance + 0.15; // 15% stays same
+    double missileChance =
+        planeChance + (0.15 + (difficulty - 1.0) * 0.15); // 15% -> 45%
+    // Remaining goes to alien
+
+    if (rand < birdChance) {
+      type = ObstacleType.bird;
+    } else if (rand < mountainChance) {
+      type = ObstacleType.mountain;
+    } else if (rand < planeChance) {
+      type = ObstacleType.plane;
+    } else if (rand < missileChance) {
+      type = ObstacleType.missile;
     } else {
-      type = ObstacleType.alien; // 10% chance
+      type = ObstacleType.alien;
     }
 
     _obstacles.add(_createObstacle(type, _lastObstacleX));
@@ -137,6 +162,7 @@ class ObstacleGenerator {
 
       case ObstacleType.bird:
         // Birds fly at various heights with random initial movement
+        double difficulty = _getDifficultyMultiplier();
         double initialY = 150.0 + _random.nextDouble() * 300;
         return Obstacle(
           type: type,
@@ -144,15 +170,16 @@ class ObstacleGenerator {
           y: initialY,
           width: 30.0,
           height: 20.0,
-          speed: 25.0,
-          velocityX: -10.0 + _random.nextDouble() * 20.0,
-          velocityY: -20.0 + _random.nextDouble() * 40.0,
+          speed: 25.0 * difficulty, // Birds faster with difficulty
+          velocityX: (-10.0 + _random.nextDouble() * 20.0) * difficulty,
+          velocityY: (-20.0 + _random.nextDouble() * 40.0) * difficulty,
           moveTimer: _random.nextDouble() * 2.0,
           targetY: 150.0 + _random.nextDouble() * 350,
         );
 
       case ObstacleType.missile:
         // Missiles come from ahead with random trajectory
+        double difficulty = _getDifficultyMultiplier();
         double initialY = 200.0 + _random.nextDouble() * 250;
         return Obstacle(
           type: type,
@@ -160,10 +187,12 @@ class ObstacleGenerator {
           y: initialY,
           width: 40.0,
           height: 15.0,
-          speed: 150.0 + _random.nextDouble() * 100.0,
-          velocityX: -150.0 - _random.nextDouble() * 100.0,
-          velocityY: -40.0 + _random.nextDouble() * 80.0,
-          moveTimer: _random.nextDouble() * 0.5,
+          speed: (150.0 + _random.nextDouble() * 100.0) * difficulty,
+          velocityX: (-150.0 - _random.nextDouble() * 100.0) * difficulty,
+          velocityY: (-40.0 + _random.nextDouble() * 80.0) * difficulty,
+          moveTimer: _random.nextDouble() *
+              0.5 /
+              difficulty, // Faster direction changes
         );
 
       case ObstacleType.plane:
@@ -178,6 +207,7 @@ class ObstacleGenerator {
 
       case ObstacleType.alien:
         // UFOs/aliens float around randomly
+        double difficulty = _getDifficultyMultiplier();
         double initialY = 250.0 + _random.nextDouble() * 250;
         return Obstacle(
           type: type,
@@ -185,10 +215,12 @@ class ObstacleGenerator {
           y: initialY,
           width: 45.0,
           height: 35.0,
-          speed: 60.0 + _random.nextDouble() * 60.0,
-          velocityX: -80.0 + _random.nextDouble() * 40.0,
-          velocityY: -25.0 + _random.nextDouble() * 50.0,
-          moveTimer: _random.nextDouble() * 2.5,
+          speed: (60.0 + _random.nextDouble() * 60.0) * difficulty,
+          velocityX: (-80.0 + _random.nextDouble() * 40.0) * difficulty,
+          velocityY: (-25.0 + _random.nextDouble() * 50.0) * difficulty,
+          moveTimer: _random.nextDouble() *
+              2.5 /
+              difficulty, // Faster movement changes
           targetY: 250.0 + _random.nextDouble() * 250,
         );
     }
