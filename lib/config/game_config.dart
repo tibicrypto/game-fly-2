@@ -1,12 +1,12 @@
 class GameConfig {
   // Physics constants
   static const double gravity = 9.8;
-  static const double refuelSpeed = 5.0;
+  static const double refuelSpeed = 3.5;
   static const double fuelWeightRatio = 0.8;
   static const double baseThrust = 12.0;
   static const double maxThrust = 20.0;
   static const double idleThrust = 2.0;
-  static const double fuelBurnRate = 1.5;
+  static const double fuelBurnRate = 2.5;
   static const double horizontalSpeed = 100.0;
 
   // Obstacle settings
