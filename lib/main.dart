@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'state/game_state_manager.dart';
 import 'screens/menu_screen.dart';
 import 'screens/cargo_selection_screen.dart';
@@ -27,13 +28,33 @@ void main() {
   );
 }
 
-class SkyHaulerApp extends StatelessWidget {
+class SkyHaulerApp extends StatefulWidget {
   const SkyHaulerApp({super.key});
+
+  @override
+  State<SkyHaulerApp> createState() => _SkyHaulerAppState();
+}
+
+class _SkyHaulerAppState extends State<SkyHaulerApp> {
+  String _appTitle = 'fly';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppInfo();
+  }
+
+  Future<void> _loadAppInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _appTitle = 'fly${packageInfo.version}';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SKY HAULER: HEAVY FUEL',
+      title: _appTitle,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFF87CEEB),
