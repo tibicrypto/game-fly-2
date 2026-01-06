@@ -9,12 +9,12 @@ class GameOverScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
     final size = MediaQuery.of(context).size;
-    
+
     String title;
     String message;
     Color titleColor;
     IconData icon;
-    
+
     switch (gameState.gameOverReason) {
       case GameOverReason.crashed:
         title = 'CRASHED!';
@@ -40,16 +40,16 @@ class GameOverScreen extends StatelessWidget {
         titleColor = Colors.grey;
         icon = Icons.cancel;
     }
-    
+
     int earnedMoney = 0;
-    if (!gameState.cargoJettisoned && 
+    if (!gameState.cargoJettisoned &&
         gameState.selectedCargo != null &&
         gameState.gameOverReason != GameOverReason.explosion) {
       earnedMoney = gameState.selectedCargo!.reward;
     }
-    
+
     int distanceMoney = (gameState.currentDistance / 10).floor();
-    
+
     return Scaffold(
       body: Container(
         width: size.width,
@@ -62,165 +62,212 @@ class GameOverScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Game Over Icon
-              Icon(icon, size: 100, color: titleColor),
-              const SizedBox(height: 20),
-              
-              // Title
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: titleColor,
-                  shadows: const [
-                    Shadow(
-                      color: Colors.black54,
-                      offset: Offset(2, 2),
-                      blurRadius: 5,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.05,
+                vertical: size.height * 0.03,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: size.height * 0.05),
+                  // Game Over Icon
+                  Icon(icon, size: size.width * 0.2, color: titleColor),
+                  SizedBox(height: size.height * 0.02),
+
+                  // Title
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: size.width * 0.1,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black54,
+                          offset: Offset(2, 2),
+                          blurRadius: 5,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 10),
-              
-              Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.white70,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              
-              const SizedBox(height: 40),
-              
-              // Stats Container
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 30),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white30, width: 2),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'FLIGHT REPORT',
+                    textAlign: TextAlign.center,
+                  ),
+
+                  SizedBox(height: size.height * 0.01),
+
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                    child: Text(
+                      message,
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontSize: size.width * 0.04,
+                        color: Colors.white70,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  SizedBox(height: size.height * 0.03),
+
+                  // Stats Container
+                  Container(
+                    width: size.width * 0.9,
+                    margin: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+                    padding: EdgeInsets.all(size.width * 0.04),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white30, width: 2),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'FLIGHT REPORT',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: size.width * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Divider(
+                            color: Colors.white30, height: size.height * 0.03),
+                        _buildStatRow(context, 'Distance Traveled',
+                            '${gameState.currentDistance}m', Colors.lightBlue),
+                        SizedBox(height: size.height * 0.01),
+                        _buildStatRow(context, 'Distance Bonus',
+                            '\$$distanceMoney', Colors.green),
+                        if (earnedMoney > 0) ...[
+                          SizedBox(height: size.height * 0.01),
+                          _buildStatRow(context, 'Cargo Delivered ✓',
+                              '\$$earnedMoney', Colors.yellow),
+                        ],
+                        if (gameState.cargoJettisoned) ...[
+                          SizedBox(height: size.height * 0.01),
+                          _buildStatRow(context, 'Cargo Status', 'JETTISONED',
+                              Colors.red),
+                        ],
+                        Divider(
+                            color: Colors.white30, height: size.height * 0.03),
+                        _buildStatRow(
+                          context,
+                          'TOTAL EARNED',
+                          '\$${earnedMoney + distanceMoney}',
+                          Colors.yellow,
+                          isTotal: true,
+                        ),
+                        SizedBox(height: size.height * 0.01),
+                        _buildStatRow(
+                          context,
+                          'Total Money',
+                          '\$${gameState.money}',
+                          Colors.green,
+                          isTotal: true,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: size.height * 0.04),
+
+                  // Buttons
+                  SizedBox(
+                    width: size.width * 0.7,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          gameState.setState(GameState.selectCargo),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.08,
+                          vertical: size.height * 0.02,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.replay, size: size.width * 0.06),
+                          SizedBox(width: size.width * 0.02),
+                          Text(
+                            'TRY AGAIN',
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const Divider(color: Colors.white30, height: 30),
-                    
-                    _buildStatRow('Distance Traveled', '${gameState.currentDistance}m', Colors.lightBlue),
-                    const SizedBox(height: 10),
-                    _buildStatRow('Distance Bonus', '\$$distanceMoney', Colors.green),
-                    
-                    if (earnedMoney > 0) ...[
-                      const SizedBox(height: 10),
-                      _buildStatRow('Cargo Delivered ✓', '\$$earnedMoney', Colors.yellow),
-                    ],
-                    
-                    if (gameState.cargoJettisoned) ...[
-                      const SizedBox(height: 10),
-                      _buildStatRow('Cargo Status', 'JETTISONED', Colors.red),
-                    ],
-                    
-                    const Divider(color: Colors.white30, height: 30),
-                    
-                    _buildStatRow(
-                      'TOTAL EARNED',
-                      '\$${earnedMoney + distanceMoney}',
-                      Colors.yellow,
-                      isTotal: true,
-                    ),
-                    
-                    const SizedBox(height: 10),
-                    
-                    _buildStatRow(
-                      'Total Money',
-                      '\$${gameState.money}',
-                      Colors.green,
-                      isTotal: true,
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 50),
-              
-              // Buttons
-              ElevatedButton(
-                onPressed: () => gameState.setState(GameState.selectCargo),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.replay, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'TRY AGAIN',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
+                  SizedBox(height: size.height * 0.015),
+
+                  SizedBox(
+                    width: size.width * 0.7,
+                    child: ElevatedButton(
+                      onPressed: () => gameState.returnToMenu(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.08,
+                          vertical: size.height * 0.015,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'MAIN MENU',
+                        style: TextStyle(fontSize: size.width * 0.04),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 15),
-              
-              ElevatedButton(
-                onPressed: () => gameState.returnToMenu(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: const Text(
-                  'MAIN MENU',
-                  style: TextStyle(fontSize: 18),
-                ),
+                  SizedBox(height: size.height * 0.03),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-  
-  Widget _buildStatRow(String label, String value, Color valueColor, {bool isTotal = false}) {
+
+  Widget _buildStatRow(
+      BuildContext context, String label, String value, Color valueColor,
+      {bool isTotal = false}) {
+    final size = MediaQuery.of(context).size;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: isTotal ? 20 : 16,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+        Flexible(
+          flex: 3,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isTotal ? size.width * 0.045 : size.width * 0.037,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontSize: isTotal ? 24 : 18,
-            fontWeight: FontWeight.bold,
+        SizedBox(width: size.width * 0.02),
+        Flexible(
+          flex: 2,
+          child: Text(
+            value,
+            style: TextStyle(
+              color: valueColor,
+              fontSize: isTotal ? size.width * 0.055 : size.width * 0.042,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.right,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

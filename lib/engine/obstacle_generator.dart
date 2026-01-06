@@ -56,8 +56,8 @@ class ObstacleGenerator {
   void _updateBirdMovement(Obstacle bird) {
     // Birds change direction randomly
     if (bird.moveTimer <= 0) {
-      // Pick new random target height
-      bird.targetY = 150.0 + _random.nextDouble() * 350;
+      // Pick new random target height across full screen
+      bird.targetY = 50.0 + _random.nextDouble() * 700;
       bird.moveTimer = 1.0 + _random.nextDouble() * 2.0; // 1-3 seconds
     }
 
@@ -88,7 +88,7 @@ class ObstacleGenerator {
     if (alien.moveTimer <= 0) {
       // Random direction change
       alien.velocityX = -alien.speed + _random.nextDouble() * 40.0 - 20.0;
-      alien.targetY = 250.0 + _random.nextDouble() * 250.0;
+      alien.targetY = 50.0 + _random.nextDouble() * 700.0; // Full screen height
       alien.moveTimer = 1.5 + _random.nextDouble() * 2.5; // 1.5-4 seconds
     }
 
@@ -161,54 +161,90 @@ class ObstacleGenerator {
         );
 
       case ObstacleType.bird:
-        // Birds fly at various heights with random initial movement
+        // Birds fly at completely random heights across the screen with various patterns
         double difficulty = _getDifficultyMultiplier();
-        double initialY = 150.0 + _random.nextDouble() * 300;
+        double initialY = 50.0 + _random.nextDouble() * 700;
+
+        // Randomly choose movement pattern for birds
+        MovementPattern pattern = MovementPattern
+            .values[_random.nextInt(MovementPattern.values.length)];
+
         return Obstacle(
           type: type,
           x: x,
           y: initialY,
           width: 30.0,
           height: 20.0,
-          speed: 25.0 * difficulty, // Birds faster with difficulty
+          speed: 25.0 * difficulty,
           velocityX: (-10.0 + _random.nextDouble() * 20.0) * difficulty,
           velocityY: (-20.0 + _random.nextDouble() * 40.0) * difficulty,
           moveTimer: _random.nextDouble() * 2.0,
-          targetY: 150.0 + _random.nextDouble() * 350,
+          targetY: 50.0 + _random.nextDouble() * 700,
+          movementPattern: pattern,
+          amplitude: 50.0 + _random.nextDouble() * 100.0,
+          frequency: 2.0 + _random.nextDouble() * 4.0,
+          baseY: initialY,
+          diagonalDirection: _random.nextBool() ? 1.0 : -1.0,
         );
 
       case ObstacleType.missile:
-        // Missiles come from ahead with random trajectory
+        // Missiles with zigzag or diagonal patterns
         double difficulty = _getDifficultyMultiplier();
-        double initialY = 200.0 + _random.nextDouble() * 250;
+        double initialY = 50.0 + _random.nextDouble() * 700;
+
+        // Missiles prefer zigzag or diagonal patterns
+        MovementPattern pattern = _random.nextDouble() < 0.5
+            ? MovementPattern.zigzag
+            : MovementPattern.diagonal;
+
         return Obstacle(
           type: type,
-          x: x + 200, // Start further ahead
+          x: x + 200,
           y: initialY,
           width: 40.0,
           height: 15.0,
           speed: (150.0 + _random.nextDouble() * 100.0) * difficulty,
           velocityX: (-150.0 - _random.nextDouble() * 100.0) * difficulty,
           velocityY: (-40.0 + _random.nextDouble() * 80.0) * difficulty,
-          moveTimer: _random.nextDouble() *
-              0.5 /
-              difficulty, // Faster direction changes
+          moveTimer: _random.nextDouble() * 0.5 / difficulty,
+          movementPattern: pattern,
+          amplitude: 80.0 + _random.nextDouble() * 120.0,
+          frequency: 3.0 + _random.nextDouble() * 5.0,
+          baseY: initialY,
+          diagonalDirection: _random.nextBool() ? 1.0 : -1.0,
         );
 
       case ObstacleType.plane:
-        // Other planes fly at mid height
+        // Planes with curved or straight flight paths
+        double initialY = 50.0 + _random.nextDouble() * 700;
+
+        // Planes prefer curved or straight patterns
+        MovementPattern pattern = _random.nextDouble() < 0.6
+            ? MovementPattern.curved
+            : MovementPattern.straight;
+
         return Obstacle(
           type: type,
           x: x,
-          y: 250.0 + _random.nextDouble() * 200,
+          y: initialY,
           width: 50.0,
           height: 30.0,
+          movementPattern: pattern,
+          amplitude: 40.0 + _random.nextDouble() * 80.0,
+          frequency: 1.5 + _random.nextDouble() * 3.0,
+          baseY: initialY,
+          velocityX: -30.0 - _random.nextDouble() * 20.0,
         );
 
       case ObstacleType.alien:
-        // UFOs/aliens float around randomly
+        // UFOs with unpredictable movement patterns
         double difficulty = _getDifficultyMultiplier();
-        double initialY = 250.0 + _random.nextDouble() * 250;
+        double initialY = 50.0 + _random.nextDouble() * 700;
+
+        // Aliens can use any movement pattern
+        MovementPattern pattern = MovementPattern
+            .values[_random.nextInt(MovementPattern.values.length)];
+
         return Obstacle(
           type: type,
           x: x + 150,
@@ -218,10 +254,13 @@ class ObstacleGenerator {
           speed: (60.0 + _random.nextDouble() * 60.0) * difficulty,
           velocityX: (-80.0 + _random.nextDouble() * 40.0) * difficulty,
           velocityY: (-25.0 + _random.nextDouble() * 50.0) * difficulty,
-          moveTimer: _random.nextDouble() *
-              2.5 /
-              difficulty, // Faster movement changes
-          targetY: 250.0 + _random.nextDouble() * 250,
+          moveTimer: _random.nextDouble() * 2.5 / difficulty,
+          targetY: 50.0 + _random.nextDouble() * 700,
+          movementPattern: pattern,
+          amplitude: 60.0 + _random.nextDouble() * 140.0,
+          frequency: 2.5 + _random.nextDouble() * 4.5,
+          baseY: initialY,
+          diagonalDirection: _random.nextBool() ? 1.0 : -1.0,
         );
     }
   }

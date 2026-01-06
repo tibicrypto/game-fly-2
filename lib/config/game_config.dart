@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class GameConfig {
   // Physics constants
   static const double gravity = 9.8;
@@ -108,6 +110,13 @@ enum ObstacleType {
   alien,
 }
 
+enum MovementPattern {
+  straight, // Di chuyển thẳng
+  curved, // Đường cong (sine wave)
+  diagonal, // Đường chéo lên/xuống
+  zigzag, // Đường zigzag
+}
+
 class Obstacle {
   final ObstacleType type;
   double x;
@@ -123,6 +132,14 @@ class Obstacle {
   double moveTimer;
   double targetY;
 
+  // Movement pattern properties
+  final MovementPattern movementPattern;
+  double movementTime; // Time elapsed for pattern calculation
+  double amplitude; // Amplitude for curved/zigzag movements
+  double frequency; // Frequency for wave patterns
+  double baseY; // Base Y position for pattern movements
+  double diagonalDirection; // Direction for diagonal movement (1 or -1)
+
   Obstacle({
     required this.type,
     required this.x,
@@ -135,12 +152,54 @@ class Obstacle {
     this.velocityY = 0.0,
     this.moveTimer = 0.0,
     double? targetY,
-  }) : targetY = targetY ?? y;
+    this.movementPattern = MovementPattern.straight,
+    this.movementTime = 0.0,
+    this.amplitude = 0.0,
+    this.frequency = 0.0,
+    double? baseY,
+    this.diagonalDirection = 1.0,
+  })  : targetY = targetY ?? y,
+        baseY = baseY ?? y;
 
   void update(double deltaTime) {
-    // Update position based on velocity
-    x += velocityX * deltaTime;
-    y += velocityY * deltaTime;
+    movementTime += deltaTime;
+
+    // Apply movement pattern
+    switch (movementPattern) {
+      case MovementPattern.curved:
+        // Sine wave movement
+        y = baseY + amplitude * sin(movementTime * frequency);
+        x += velocityX * deltaTime;
+        break;
+
+      case MovementPattern.diagonal:
+        // Diagonal up/down movement
+        x += velocityX * deltaTime;
+        y += diagonalDirection * speed * deltaTime;
+        // Bounce off screen edges
+        if (y < 50 || y > 750) {
+          diagonalDirection *= -1;
+        }
+        break;
+
+      case MovementPattern.zigzag:
+        // Zigzag pattern - sharp direction changes
+        x += velocityX * deltaTime;
+        if (moveTimer <= 0) {
+          diagonalDirection *= -1;
+          moveTimer = 0.5; // Change direction every 0.5 seconds
+        }
+        y += diagonalDirection * amplitude * deltaTime * 100;
+        // Keep within screen bounds
+        y = y.clamp(50.0, 750.0);
+        break;
+
+      case MovementPattern.straight:
+        // Standard movement
+        x += velocityX * deltaTime;
+        y += velocityY * deltaTime;
+        break;
+    }
 
     // Update timer for movement changes
     moveTimer -= deltaTime;
