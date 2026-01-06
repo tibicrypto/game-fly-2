@@ -8,15 +8,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: mingc/android-build-box:latest
+    env:
+      ANDROID_HOME: /opt/android-sdk-linux
+      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+      FLUTTER_ROOT: /opt/flutter
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.x'
+    - name: Verify Flutter
+      run: flutter --version
+
+    - name: Accept Android licenses
+      run: yes | flutter doctor --android-licenses
 
     - name: Install dependencies
       run: flutter pub get
