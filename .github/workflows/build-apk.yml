@@ -24,7 +24,14 @@ jobs:
     - name: Build APK
       run: flutter build apk --release
 
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release
+        path: build/app/outputs/flutter-apk/app-release.apk
+
     - name: Create Release and Upload APK
+      if: github.event_name == 'push'
       uses: softprops/action-gh-release@v1
       with:
         files: build/app/outputs/flutter-apk/app-release.apk
