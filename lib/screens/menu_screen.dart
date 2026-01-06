@@ -9,7 +9,7 @@ class MenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       body: Container(
         width: size.width,
@@ -25,138 +25,158 @@ class MenuScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Title
-              const Icon(
-                Icons.airplanemode_active,
-                size: 80,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'SKY HAULER',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: size.height * 0.05),
+                  // Title
+                  Icon(
+                    Icons.airplanemode_active,
+                    size: size.width * 0.15,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: size.height * 0.02),
+                  Text(
+                    'SKY HAULER',
+                    style: TextStyle(
+                      fontSize: size.width * 0.1,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: const [
+                        Shadow(
+                          color: Colors.black54,
+                          offset: Offset(3, 3),
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    'HEAVY FUEL',
+                    style: TextStyle(
+                      fontSize: size.width * 0.055,
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: size.height * 0.01),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      'Pump fuel to fly, but watch the weight!',
+                      style: TextStyle(
+                        fontSize: size.width * 0.035,
+                        color: Colors.white70,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                  SizedBox(height: size.height * 0.04),
+
+                  // Stats
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+                    padding: EdgeInsets.all(size.width * 0.04),
+                    decoration: BoxDecoration(
                       color: Colors.black54,
-                      offset: Offset(3, 3),
-                      blurRadius: 5,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
-              ),
-              const Text(
-                'HEAVY FUEL',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Pump fuel to fly, but watch the weight!',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                  fontStyle: FontStyle.italic,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              const SizedBox(height: 50),
-              
-              // Stats
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 40),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
                       children: [
-                        const Text(
-                          'Money:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Money:',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: size.width * 0.045),
+                            ),
+                            Flexible(
+                              child: Text(
+                                '\$${gameState.money}',
+                                style: TextStyle(
+                                  color: Colors.yellow,
+                                  fontSize: size.width * 0.055,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '\$${gameState.money}',
-                          style: const TextStyle(
-                            color: Colors.yellow,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        SizedBox(height: size.height * 0.01),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total Distance:',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: size.width * 0.04),
+                            ),
+                            Flexible(
+                              child: Text(
+                                '${gameState.totalDistance}m',
+                                style: TextStyle(
+                                  color: Colors.lightBlue,
+                                  fontSize: size.width * 0.045,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Total Distance:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        Text(
-                          '${gameState.totalDistance}m',
-                          style: const TextStyle(
-                            color: Colors.lightBlue,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+
+                  SizedBox(height: size.height * 0.04),
+
+                  // Buttons
+                  _buildMenuButton(
+                    context,
+                    'START MISSION',
+                    Icons.flight_takeoff,
+                    Colors.green,
+                    () => gameState.setState(GameState.selectCargo),
+                  ),
+
+                  SizedBox(height: size.height * 0.015),
+
+                  _buildMenuButton(
+                    context,
+                    'HANGAR (${gameState.ownedPlanes.length} planes)',
+                    Icons.shopping_cart,
+                    Colors.blue,
+                    () => gameState.setState(GameState.selectPlane),
+                  ),
+
+                  SizedBox(height: size.height * 0.015),
+
+                  _buildMenuButton(
+                    context,
+                    'HOW TO PLAY',
+                    Icons.help_outline,
+                    Colors.orange,
+                    () => _showInstructions(context),
+                  ),
+                  SizedBox(height: size.height * 0.05),
+                ],
               ),
-              
-              const SizedBox(height: 50),
-              
-              // Buttons
-              _buildMenuButton(
-                context,
-                'START MISSION',
-                Icons.flight_takeoff,
-                Colors.green,
-                () => gameState.setState(GameState.selectCargo),
-              ),
-              
-              const SizedBox(height: 15),
-              
-              _buildMenuButton(
-                context,
-                'HANGAR (${gameState.ownedPlanes.length} planes)',
-                Icons.shopping_cart,
-                Colors.blue,
-                () => gameState.setState(GameState.selectPlane),
-              ),
-              
-              const SizedBox(height: 15),
-              
-              _buildMenuButton(
-                context,
-                'HOW TO PLAY',
-                Icons.help_outline,
-                Colors.orange,
-                () => _showInstructions(context),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-  
+
   Widget _buildMenuButton(
     BuildContext context,
     String text,
@@ -164,29 +184,40 @@ class MenuScreen extends StatelessWidget {
     Color color,
     VoidCallback onPressed,
   ) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 28),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    final size = MediaQuery.of(context).size;
+    return SizedBox(
+      width: size.width * 0.85,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.05,
+            vertical: size.height * 0.018,
           ),
-        ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: size.width * 0.06),
+            SizedBox(width: size.width * 0.02),
+            Flexible(
+              child: Text(
+                text,
+                style: TextStyle(
+                    fontSize: size.width * 0.045, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-  
+
   void _showInstructions(BuildContext context) {
     showDialog(
       context: context,

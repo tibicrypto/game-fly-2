@@ -10,7 +10,7 @@ class CargoSelectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('SELECT CONTRACT'),
@@ -42,11 +42,12 @@ class CargoSelectionScreen extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildCargoCard(BuildContext context, CargoClass cargo, GameStateManager gameState) {
+
+  Widget _buildCargoCard(
+      BuildContext context, CargoClass cargo, GameStateManager gameState) {
     Color difficultyColor;
     String difficulty;
-    
+
     switch (cargo.type) {
       case CargoType.mail:
         difficultyColor = Colors.green;
@@ -65,7 +66,7 @@ class CargoSelectionScreen extends StatelessWidget {
         difficulty = 'EXTREME';
         break;
     }
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 5,
@@ -100,7 +101,8 @@ class CargoSelectionScreen extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: difficultyColor,
                       borderRadius: BorderRadius.circular(20),
@@ -155,26 +157,26 @@ class CargoSelectionScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildStatChip(IconData icon, String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 3),
           Text(
             text,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.bold,
-              fontSize: 12,
+              fontSize: 11,
             ),
           ),
         ],
