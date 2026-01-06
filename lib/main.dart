@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'state/game_state_manager.dart';
+import 'localization/language_provider.dart';
+import 'localization/app_localizations.dart';
 import 'screens/menu_screen.dart';
 import 'screens/cargo_selection_screen.dart';
 import 'screens/plane_selection_screen.dart';
@@ -21,8 +24,11 @@ void main() {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => GameStateManager(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GameStateManager()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
       child: const SkyHaulerApp(),
     ),
   );
@@ -53,15 +59,29 @@ class _SkyHaulerAppState extends State<SkyHaulerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _appTitle,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: const Color(0xFF87CEEB),
-        fontFamily: 'Courier',
-      ),
-      debugShowCheckedModeBanner: false,
-      home: const GameNavigator(),
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return MaterialApp(
+          title: _appTitle,
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            scaffoldBackgroundColor: const Color(0xFF87CEEB),
+            fontFamily: 'Courier',
+          ),
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: [
+            AppLocalizationsDelegate(languageProvider.currentLanguage),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('vi', ''),
+          ],
+          home: const GameNavigator(),
+        );
+      },
     );
   }
 }

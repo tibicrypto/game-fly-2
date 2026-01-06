@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
+import '../localization/app_localizations.dart';
 
 class GameOverScreen extends StatelessWidget {
   const GameOverScreen({super.key});
@@ -8,6 +9,7 @@ class GameOverScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
 
     String title;
@@ -17,25 +19,25 @@ class GameOverScreen extends StatelessWidget {
 
     switch (gameState.gameOverReason) {
       case GameOverReason.crashed:
-        title = 'CRASHED!';
-        message = 'You hit the terrain!';
+        title = localizations.crashed;
+        message = localizations.crashedMessage;
         titleColor = Colors.red;
         icon = Icons.terrain;
         break;
       case GameOverReason.outOfFuel:
-        title = 'OUT OF FUEL!';
-        message = 'Your plane ran out of fuel!';
+        title = localizations.outOfFuel;
+        message = localizations.outOfFuelMessage;
         titleColor = Colors.orange;
         icon = Icons.local_gas_station;
         break;
       case GameOverReason.explosion:
-        title = 'EXPLOSION!';
-        message = 'The explosive cargo detonated!';
+        title = localizations.explosion;
+        message = localizations.explosionMessage;
         titleColor = Colors.deepOrange;
         icon = Icons.warning;
         break;
       default:
-        title = 'GAME OVER';
+        title = localizations.gameOver;
         message = '';
         titleColor = Colors.grey;
         icon = Icons.cancel;
@@ -125,7 +127,7 @@ class GameOverScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          'FLIGHT REPORT',
+                          localizations.flightReport,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: size.width * 0.05,
@@ -134,26 +136,26 @@ class GameOverScreen extends StatelessWidget {
                         ),
                         Divider(
                             color: Colors.white30, height: size.height * 0.03),
-                        _buildStatRow(context, 'Distance Traveled',
+                        _buildStatRow(context, localizations.distanceTraveled,
                             '${gameState.currentDistance}m', Colors.lightBlue),
                         SizedBox(height: size.height * 0.01),
-                        _buildStatRow(context, 'Distance Bonus',
+                        _buildStatRow(context, localizations.distanceBonus,
                             '\$$distanceMoney', Colors.green),
                         if (earnedMoney > 0) ...[
                           SizedBox(height: size.height * 0.01),
-                          _buildStatRow(context, 'Cargo Delivered ✓',
+                          _buildStatRow(context, localizations.cargoDelivered,
                               '\$$earnedMoney', Colors.yellow),
                         ],
                         if (gameState.cargoJettisoned) ...[
                           SizedBox(height: size.height * 0.01),
-                          _buildStatRow(context, 'Cargo Status', 'JETTISONED',
-                              Colors.red),
+                          _buildStatRow(context, localizations.cargoStatus,
+                              localizations.jettisoned, Colors.red),
                         ],
                         Divider(
                             color: Colors.white30, height: size.height * 0.03),
                         _buildStatRow(
                           context,
-                          'TOTAL EARNED',
+                          localizations.totalEarned,
                           '\$${earnedMoney + distanceMoney}',
                           Colors.yellow,
                           isTotal: true,
@@ -161,7 +163,7 @@ class GameOverScreen extends StatelessWidget {
                         SizedBox(height: size.height * 0.01),
                         _buildStatRow(
                           context,
-                          'Total Money',
+                          localizations.totalMoney,
                           '\$${gameState.money}',
                           Colors.green,
                           isTotal: true,
@@ -194,7 +196,7 @@ class GameOverScreen extends StatelessWidget {
                           Icon(Icons.replay, size: size.width * 0.06),
                           SizedBox(width: size.width * 0.02),
                           Text(
-                            'TRY AGAIN',
+                            localizations.tryAgain,
                             style: TextStyle(
                               fontSize: size.width * 0.045,
                               fontWeight: FontWeight.bold,
@@ -222,7 +224,7 @@ class GameOverScreen extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'MAIN MENU',
+                        localizations.mainMenu,
                         style: TextStyle(fontSize: size.width * 0.04),
                       ),
                     ),

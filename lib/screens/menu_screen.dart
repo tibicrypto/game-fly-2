@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
+import '../localization/app_localizations.dart';
+import '../localization/language_provider.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -8,6 +10,8 @@ class MenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -31,7 +35,30 @@ class MenuScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: size.height * 0.05),
+                  SizedBox(height: size.height * 0.02),
+                  // Language toggle button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      onPressed: () => languageProvider.toggleLanguage(),
+                      icon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.language, color: Colors.white),
+                          SizedBox(width: 4),
+                          Text(
+                            languageProvider.currentLanguage ==
+                                    AppLanguage.english
+                                ? 'EN'
+                                : 'VI',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   // Title
                   Icon(
                     Icons.airplanemode_active,
@@ -40,7 +67,7 @@ class MenuScreen extends StatelessWidget {
                   ),
                   SizedBox(height: size.height * 0.02),
                   Text(
-                    'SKY HAULER',
+                    localizations.appTitle,
                     style: TextStyle(
                       fontSize: size.width * 0.1,
                       fontWeight: FontWeight.bold,
@@ -55,7 +82,7 @@ class MenuScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'HEAVY FUEL',
+                    localizations.appSubtitle,
                     style: TextStyle(
                       fontSize: size.width * 0.055,
                       color: Colors.orange,
@@ -66,7 +93,7 @@ class MenuScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
-                      'Pump fuel to fly, but watch the weight!',
+                      localizations.appTagline,
                       style: TextStyle(
                         fontSize: size.width * 0.035,
                         color: Colors.white70,
@@ -92,7 +119,7 @@ class MenuScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Money:',
+                              localizations.money,
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: size.width * 0.045),
@@ -115,7 +142,7 @@ class MenuScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Total Distance:',
+                              localizations.totalDistance,
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: size.width * 0.04),
@@ -142,7 +169,7 @@ class MenuScreen extends StatelessWidget {
                   // Buttons
                   _buildMenuButton(
                     context,
-                    'START MISSION',
+                    localizations.startMission,
                     Icons.flight_takeoff,
                     Colors.green,
                     () => gameState.setState(GameState.selectCargo),
@@ -152,7 +179,7 @@ class MenuScreen extends StatelessWidget {
 
                   _buildMenuButton(
                     context,
-                    'HANGAR (${gameState.ownedPlanes.length} planes)',
+                    '${localizations.hangar} (${gameState.ownedPlanes.length} ${localizations.planes})',
                     Icons.shopping_cart,
                     Colors.blue,
                     () => gameState.setState(GameState.selectPlane),
@@ -162,7 +189,7 @@ class MenuScreen extends StatelessWidget {
 
                   _buildMenuButton(
                     context,
-                    'HOW TO PLAY',
+                    localizations.howToPlay,
                     Icons.help_outline,
                     Colors.orange,
                     () => _showInstructions(context),
@@ -219,57 +246,58 @@ class MenuScreen extends StatelessWidget {
   }
 
   void _showInstructions(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('HOW TO PLAY'),
+        title: Text(localizations.howToPlay),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Text(
-                '🎮 CONTROLS',
+                localizations.controls,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               SizedBox(height: 10),
-              Text('• Hold 2 FINGERS to refuel & thrust'),
-              Text('• Release to glide and save fuel'),
-              Text('• Swipe DOWN to jettison cargo'),
+              Text(localizations.controlsText1),
+              Text(localizations.controlsText2),
+              Text(localizations.controlsText3),
               SizedBox(height: 15),
               Text(
-                '⚖️ PHYSICS',
+                localizations.physics,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               SizedBox(height: 10),
-              Text('• More fuel = Heavier plane = Harder to fly'),
-              Text('• Heavy cargo needs careful fuel management'),
-              Text('• Balance thrust and weight to survive'),
+              Text(localizations.physicsText1),
+              Text(localizations.physicsText2),
+              Text(localizations.physicsText3),
               SizedBox(height: 15),
               Text(
-                '⚠️ DANGERS',
+                localizations.dangers,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               SizedBox(height: 10),
-              Text('• Crash into terrain = GAME OVER'),
-              Text('• Run out of fuel = FALL'),
-              Text('• Fly too high = Lightning damage'),
+              Text(localizations.dangersText1),
+              Text(localizations.dangersText2),
+              Text(localizations.dangersText3),
               SizedBox(height: 15),
               Text(
-                '💰 REWARDS',
+                localizations.rewards,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
               SizedBox(height: 10),
-              Text('• Deliver cargo = Big money'),
-              Text('• Jettison cargo = Only distance points'),
-              Text('• Buy better planes in the hangar'),
+              Text(localizations.rewardsText1),
+              Text(localizations.rewardsText2),
+              Text(localizations.rewardsText3),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('GOT IT!'),
+            child: Text(localizations.gotIt),
           ),
         ],
       ),

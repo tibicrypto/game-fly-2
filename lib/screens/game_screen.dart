@@ -6,6 +6,7 @@ import '../engine/physics_engine.dart';
 import '../engine/terrain_generator.dart';
 import '../engine/obstacle_generator.dart';
 import '../state/game_state_manager.dart';
+import '../localization/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class GameScreen extends StatefulWidget {
@@ -210,6 +211,7 @@ class _GameScreenState extends State<GameScreen>
 
   Widget _buildHUD(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
+    final localizations = AppLocalizations.of(context);
 
     final screenSize = MediaQuery.of(context).size;
     return SafeArea(
@@ -237,7 +239,7 @@ class _GameScreenState extends State<GameScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Distance: ${_distance}m',
+                          '${localizations.distance}: ${_distance}m',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: screenSize.width * 0.035,
@@ -245,7 +247,7 @@ class _GameScreenState extends State<GameScreen>
                           ),
                         ),
                         Text(
-                          'Money: \$${gameState.money}',
+                          '${localizations.money} \$${gameState.money}',
                           style: TextStyle(
                             color: Colors.yellow,
                             fontSize: screenSize.width * 0.032,
@@ -282,7 +284,7 @@ class _GameScreenState extends State<GameScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'FUEL',
+                    localizations.fuel,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: screenSize.width * 0.028,
@@ -344,7 +346,7 @@ class _GameScreenState extends State<GameScreen>
                           color: Colors.white, size: screenSize.width * 0.1),
                       SizedBox(height: screenSize.height * 0.008),
                       Text(
-                        'HOLD 2 FINGERS',
+                        localizations.holdTwoFingers,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: screenSize.width * 0.045,
@@ -352,7 +354,7 @@ class _GameScreenState extends State<GameScreen>
                         ),
                       ),
                       Text(
-                        'to refuel & thrust',
+                        localizations.toRefuelThrust,
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: screenSize.width * 0.032,
@@ -362,7 +364,7 @@ class _GameScreenState extends State<GameScreen>
                       Icon(Icons.arrow_downward,
                           color: Colors.orange, size: screenSize.width * 0.07),
                       Text(
-                        'SWIPE DOWN',
+                        localizations.swipeDown,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: screenSize.width * 0.038,
@@ -370,7 +372,7 @@ class _GameScreenState extends State<GameScreen>
                         ),
                       ),
                       Text(
-                        'to jettison cargo',
+                        localizations.toJettisonCargo,
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: screenSize.width * 0.028,
@@ -427,6 +429,7 @@ class _GameScreenState extends State<GameScreen>
 
   Widget _buildPauseOverlay(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context, listen: false);
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
 
     return Container(
@@ -452,7 +455,7 @@ class _GameScreenState extends State<GameScreen>
               ),
               SizedBox(height: size.height * 0.02),
               Text(
-                'PAUSED',
+                localizations.paused,
                 style: TextStyle(
                   fontSize: size.width * 0.08,
                   fontWeight: FontWeight.bold,
@@ -481,7 +484,7 @@ class _GameScreenState extends State<GameScreen>
                       Icon(Icons.play_arrow, size: size.width * 0.06),
                       SizedBox(width: size.width * 0.02),
                       Text(
-                        'RESUME',
+                        localizations.resume,
                         style: TextStyle(
                           fontSize: size.width * 0.045,
                           fontWeight: FontWeight.bold,
@@ -509,7 +512,7 @@ class _GameScreenState extends State<GameScreen>
                     ),
                   ),
                   child: Text(
-                    'MAIN MENU',
+                    localizations.mainMenu,
                     style: TextStyle(
                       fontSize: size.width * 0.04,
                     ),

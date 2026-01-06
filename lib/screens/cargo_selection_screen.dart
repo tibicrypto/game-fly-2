@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
+import '../localization/app_localizations.dart';
 
 class CargoSelectionScreen extends StatelessWidget {
   const CargoSelectionScreen({super.key});
@@ -9,11 +10,12 @@ class CargoSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SELECT CONTRACT'),
+        title: Text(localizations.selectContract),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => gameState.returnToMenu(),
@@ -45,25 +47,26 @@ class CargoSelectionScreen extends StatelessWidget {
 
   Widget _buildCargoCard(
       BuildContext context, CargoClass cargo, GameStateManager gameState) {
+    final localizations = AppLocalizations.of(context);
     Color difficultyColor;
     String difficulty;
 
     switch (cargo.type) {
       case CargoType.mail:
         difficultyColor = Colors.green;
-        difficulty = 'EASY';
+        difficulty = localizations.difficultyEasy;
         break;
       case CargoType.food:
         difficultyColor = Colors.yellow;
-        difficulty = 'MEDIUM';
+        difficulty = localizations.difficultyMedium;
         break;
       case CargoType.gold:
         difficultyColor = Colors.orange;
-        difficulty = 'HARD';
+        difficulty = localizations.difficultyHard;
         break;
       case CargoType.uranium:
         difficultyColor = Colors.red;
-        difficulty = 'EXTREME';
+        difficulty = localizations.difficultyExtreme;
         break;
     }
 

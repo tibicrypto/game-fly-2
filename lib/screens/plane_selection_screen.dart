@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
+import '../localization/app_localizations.dart';
 
 class PlaneSelectionScreen extends StatelessWidget {
   const PlaneSelectionScreen({super.key});
@@ -9,11 +10,12 @@ class PlaneSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gameState = Provider.of<GameStateManager>(context);
+    final localizations = AppLocalizations.of(context);
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SELECT PLANE'),
+        title: Text(localizations.selectPlane),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => gameState.setState(GameState.selectCargo),
@@ -50,7 +52,7 @@ class PlaneSelectionScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Contract: ${gameState.selectedCargo!.name}',
+                              '${localizations.contract} ${gameState.selectedCargo!.name}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -69,7 +71,7 @@ class PlaneSelectionScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              
+
               // Planes list
               Expanded(
                 child: ListView.builder(
@@ -80,7 +82,7 @@ class PlaneSelectionScreen extends StatelessWidget {
                     final isOwned = gameState.ownedPlanes.contains(plane);
                     final isSelected = gameState.selectedPlane == plane;
                     final canBuy = gameState.canBuyPlane(plane);
-                    
+
                     return _buildPlaneCard(
                       context,
                       plane,
@@ -92,7 +94,7 @@ class PlaneSelectionScreen extends StatelessWidget {
                   },
                 ),
               ),
-              
+
               // Start button
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -100,19 +102,21 @@ class PlaneSelectionScreen extends StatelessWidget {
                   onPressed: () => gameState.startGame(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(Icons.flight_takeoff, size: 32),
                       SizedBox(width: 12),
                       Text(
-                        'START FLIGHT',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        localizations.startFlight,
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -124,7 +128,7 @@ class PlaneSelectionScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildPlaneCard(
     BuildContext context,
     PlaneStats plane,
@@ -133,6 +137,7 @@ class PlaneSelectionScreen extends StatelessWidget {
     bool isSelected,
     bool canBuy,
   ) {
+    final localizations = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: isSelected ? 10 : 3,
@@ -147,17 +152,18 @@ class PlaneSelectionScreen extends StatelessWidget {
             ? () => gameState.selectPlane(plane)
             : canBuy
                 ? () {
+                    final localizations = AppLocalizations.of(context);
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: Text('Buy ${plane.name}?'),
+                        title: Text('${localizations.buy} ${plane.name}?'),
                         content: Text(
-                          'This will cost \$${plane.price}.\nYou have \$${gameState.money}.',
+                          '${localizations.buyMessage1} \$${plane.price}.\n${localizations.buyMessage2} \$${gameState.money}.',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel'),
+                            child: Text(localizations.cancel),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -166,13 +172,14 @@ class PlaneSelectionScreen extends StatelessWidget {
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('${plane.name} purchased!'),
+                                    content: Text(
+                                        '${plane.name} ${localizations.purchased}'),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
                               }
                             },
-                            child: const Text('Buy'),
+                            child: Text(localizations.buy),
                           ),
                         ],
                       ),
@@ -229,13 +236,16 @@ class PlaneSelectionScreen extends StatelessWidget {
                   ),
                   if (isOwned)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.green : Colors.blue,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        isSelected ? 'SELECTED' : 'OWNED',
+                        isSelected
+                            ? localizations.selected
+                            : localizations.owned,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -245,7 +255,8 @@ class PlaneSelectionScreen extends StatelessWidget {
                     ),
                   if (!isOwned && !canBuy)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.grey,
                         borderRadius: BorderRadius.circular(20),
@@ -277,7 +288,8 @@ class PlaneSelectionScreen extends StatelessWidget {
                 children: [
                   _buildStatBar('Weight', plane.baseWeight, 200, Colors.orange),
                   _buildStatBar('Power', plane.liftPower, 50, Colors.blue),
-                  _buildStatBar('Fuel Cap', plane.maxFuelCapacity, 200, Colors.green),
+                  _buildStatBar(
+                      'Fuel Cap', plane.maxFuelCapacity, 200, Colors.green),
                 ],
               ),
             ],
@@ -286,7 +298,7 @@ class PlaneSelectionScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildStatBar(String label, double value, double max, Color color) {
     return SizedBox(
       width: 100,
