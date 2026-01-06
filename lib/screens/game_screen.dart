@@ -190,6 +190,16 @@ class _GameScreenState extends State<GameScreen>
 
                 // HUD
                 _buildHUD(context),
+
+                // Pause overlay
+                Consumer<GameStateManager>(
+                  builder: (context, gameState, child) {
+                    if (gameState.state == GameState.paused) {
+                      return _buildPauseOverlay(context);
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
               ],
             ),
           ),
@@ -410,6 +420,104 @@ class _GameScreenState extends State<GameScreen>
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPauseOverlay(BuildContext context) {
+    final gameState = Provider.of<GameStateManager>(context, listen: false);
+    final size = MediaQuery.of(context).size;
+
+    return Container(
+      width: size.width,
+      height: size.height,
+      color: Colors.black54,
+      child: Center(
+        child: Container(
+          width: size.width * 0.8,
+          padding: EdgeInsets.all(size.width * 0.05),
+          decoration: BoxDecoration(
+            color: Colors.black87,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white30, width: 2),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.pause_circle_filled,
+                size: size.width * 0.15,
+                color: Colors.white,
+              ),
+              SizedBox(height: size.height * 0.02),
+              Text(
+                'PAUSED',
+                style: TextStyle(
+                  fontSize: size.width * 0.08,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: size.height * 0.04),
+
+              // Resume button
+              SizedBox(
+                width: size.width * 0.6,
+                child: ElevatedButton(
+                  onPressed: () => gameState.resumeGame(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(
+                      vertical: size.height * 0.02,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.play_arrow, size: size.width * 0.06),
+                      SizedBox(width: size.width * 0.02),
+                      Text(
+                        'RESUME',
+                        style: TextStyle(
+                          fontSize: size.width * 0.045,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: size.height * 0.015),
+
+              // Main menu button
+              SizedBox(
+                width: size.width * 0.6,
+                child: ElevatedButton(
+                  onPressed: () => gameState.returnToMenu(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(
+                      vertical: size.height * 0.015,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'MAIN MENU',
+                    style: TextStyle(
+                      fontSize: size.width * 0.04,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
