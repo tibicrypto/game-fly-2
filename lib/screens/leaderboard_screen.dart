@@ -177,23 +177,29 @@ class LeaderboardScreen extends StatelessWidget {
                                       // Plane & Cargo
                                       Row(
                                         children: [
-                                          Text(
-                                            '${localizations.plane}: ${record.plane}',
-                                            style: TextStyle(
-                                              fontSize: size.width * 0.032,
-                                              color: isTopRank
-                                                  ? Colors.white70
-                                                  : Colors.white70,
+                                          Flexible(
+                                            child: Text(
+                                              '${localizations.plane}: ${record.plane}',
+                                              style: TextStyle(
+                                                fontSize: size.width * 0.032,
+                                                color: isTopRank
+                                                    ? Colors.white70
+                                                    : Colors.white70,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          SizedBox(width: size.width * 0.03),
-                                          Text(
-                                            '${localizations.cargo}: ${record.cargo}',
-                                            style: TextStyle(
-                                              fontSize: size.width * 0.032,
-                                              color: isTopRank
-                                                  ? Colors.white70
-                                                  : Colors.white70,
+                                          SizedBox(width: size.width * 0.02),
+                                          Flexible(
+                                            child: Text(
+                                              '${localizations.cargo}: ${record.cargo}',
+                                              style: TextStyle(
+                                                fontSize: size.width * 0.032,
+                                                color: isTopRank
+                                                    ? Colors.white70
+                                                    : Colors.white70,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
