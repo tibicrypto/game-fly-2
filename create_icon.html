@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="canvas" width="512" height="512"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Gradient sky background
+const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+gradient.addColorStop(0, '#1E90FF');
+gradient.addColorStop(1, '#87CEEB');
+ctx.fillStyle = gradient;
+ctx.fillRect(0, 0, 512, 512);
+
+// Draw clouds
+ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+ctx.beginPath();
+ctx.arc(100, 85, 35, 0, Math.PI * 2);
+ctx.arc(140, 75, 30, 0, Math.PI * 2);
+ctx.arc(170, 90, 30, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.beginPath();
+ctx.arc(370, 420, 35, 0, Math.PI * 2);
+ctx.arc(410, 410, 30, 0, Math.PI * 2);
+ctx.arc(440, 425, 30, 0, Math.PI * 2);
+ctx.fill();
+
+// Draw airplane
+ctx.fillStyle = '#4682B4';
+ctx.strokeStyle = '#1E3A5F';
+ctx.lineWidth = 3;
+
+// Fuselage
+ctx.beginPath();
+ctx.moveTo(200, 256);
+ctx.lineTo(180, 240);
+ctx.lineTo(120, 240);
+ctx.lineTo(100, 256);
+ctx.lineTo(120, 272);
+ctx.lineTo(180, 272);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+// Wings
+ctx.beginPath();
+ctx.moveTo(160, 256);
+ctx.lineTo(140, 200);
+ctx.lineTo(180, 210);
+ctx.lineTo(200, 256);
+ctx.lineTo(180, 302);
+ctx.lineTo(140, 312);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+// Tail
+ctx.beginPath();
+ctx.moveTo(110, 256);
+ctx.lineTo(90, 220);
+ctx.lineTo(120, 230);
+ctx.closePath();
+ctx.fill();
+ctx.stroke();
+
+// Cockpit window
+ctx.fillStyle = '#87CEEB';
+ctx.beginPath();
+ctx.arc(183, 256, 12, 0, Math.PI * 2);
+ctx.fill();
+ctx.stroke();
+
+// Engine flame
+ctx.fillStyle = '#FF8C00';
+ctx.beginPath();
+ctx.ellipse(92, 256, 12, 10, 0, 0, Math.PI * 2);
+ctx.fill();
+
+ctx.fillStyle = '#FFD700';
+ctx.beginPath();
+ctx.ellipse(92, 256, 8, 6, 0, 0, Math.PI * 2);
+ctx.fill();
+
+// Title text
+ctx.font = 'bold 48px Arial';
+ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+ctx.textAlign = 'center';
+ctx.fillText('SKY HAULER', 256, 163);
+ctx.fillStyle = 'white';
+ctx.fillText('SKY HAULER', 256, 160);
+
+// Convert to PNG and download
+canvas.toBlob(blob => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'icon.png';
+  a.click();
+  console.log('Icon ready - save as icon.png to assets folder');
+});
+</script>
+</body>
+</html>

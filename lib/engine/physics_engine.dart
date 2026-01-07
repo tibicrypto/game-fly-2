@@ -135,4 +135,12 @@ class PhysicsEngine {
       planeHeight,
     );
   }
+
+  void resetForContinue() {
+    // Reset to safe flying position
+    planeY = 400.0;
+    velocityY = 0.0;
+    velocityX = GameConfig.horizontalSpeed;
+    // Keep current fuel and horizontal position
+  }
 }

@@ -70,13 +70,13 @@ class ObstacleGenerator {
     }
 
     // Random horizontal drift
-    bird.velocityX = -10.0 + _random.nextDouble() * 20.0;
+    bird.velocityX = -5.0 + _random.nextDouble() * 10.0;
   }
 
   void _updateMissileMovement(Obstacle missile) {
     // Missiles move fast with slight wobble
     if (missile.moveTimer <= 0) {
-      missile.velocityX = -missile.speed - _random.nextDouble() * 50.0;
+      missile.velocityX = -missile.speed - _random.nextDouble() * 30.0;
       missile.velocityY =
           -30.0 + _random.nextDouble() * 60.0; // Random vertical
       missile.moveTimer = 0.3 + _random.nextDouble() * 0.5; // Quick changes
@@ -87,7 +87,7 @@ class ObstacleGenerator {
     // UFOs move in random patterns
     if (alien.moveTimer <= 0) {
       // Random direction change
-      alien.velocityX = -alien.speed + _random.nextDouble() * 40.0 - 20.0;
+      alien.velocityX = -alien.speed + _random.nextDouble() * 30.0 - 15.0;
       alien.targetY = 50.0 + _random.nextDouble() * 700.0; // Full screen height
       alien.moveTimer = 1.5 + _random.nextDouble() * 2.5; // 1.5-4 seconds
     }
@@ -175,9 +175,9 @@ class ObstacleGenerator {
           y: initialY,
           width: 30.0,
           height: 20.0,
-          speed: 25.0 * difficulty,
-          velocityX: (-10.0 + _random.nextDouble() * 20.0) * difficulty,
-          velocityY: (-20.0 + _random.nextDouble() * 40.0) * difficulty,
+          speed: 15.0 * difficulty,
+          velocityX: (-5.0 + _random.nextDouble() * 10.0) * difficulty,
+          velocityY: (-10.0 + _random.nextDouble() * 20.0) * difficulty,
           moveTimer: _random.nextDouble() * 2.0,
           targetY: 50.0 + _random.nextDouble() * 700,
           movementPattern: pattern,
@@ -203,9 +203,9 @@ class ObstacleGenerator {
           y: initialY,
           width: 40.0,
           height: 15.0,
-          speed: (150.0 + _random.nextDouble() * 100.0) * difficulty,
-          velocityX: (-150.0 - _random.nextDouble() * 100.0) * difficulty,
-          velocityY: (-40.0 + _random.nextDouble() * 80.0) * difficulty,
+          speed: (80.0 + _random.nextDouble() * 50.0) * difficulty,
+          velocityX: (-80.0 - _random.nextDouble() * 50.0) * difficulty,
+          velocityY: (-20.0 + _random.nextDouble() * 40.0) * difficulty,
           moveTimer: _random.nextDouble() * 0.5 / difficulty,
           movementPattern: pattern,
           amplitude: 80.0 + _random.nextDouble() * 120.0,
@@ -233,7 +233,7 @@ class ObstacleGenerator {
           amplitude: 40.0 + _random.nextDouble() * 80.0,
           frequency: 1.5 + _random.nextDouble() * 3.0,
           baseY: initialY,
-          velocityX: -30.0 - _random.nextDouble() * 20.0,
+          velocityX: -20.0 - _random.nextDouble() * 10.0,
         );
 
       case ObstacleType.alien:
@@ -251,9 +251,9 @@ class ObstacleGenerator {
           y: initialY,
           width: 45.0,
           height: 35.0,
-          speed: (60.0 + _random.nextDouble() * 60.0) * difficulty,
-          velocityX: (-80.0 + _random.nextDouble() * 40.0) * difficulty,
-          velocityY: (-25.0 + _random.nextDouble() * 50.0) * difficulty,
+          speed: (40.0 + _random.nextDouble() * 40.0) * difficulty,
+          velocityX: (-50.0 + _random.nextDouble() * 30.0) * difficulty,
+          velocityY: (-15.0 + _random.nextDouble() * 30.0) * difficulty,
           moveTimer: _random.nextDouble() * 2.5 / difficulty,
           targetY: 50.0 + _random.nextDouble() * 700,
           movementPattern: pattern,

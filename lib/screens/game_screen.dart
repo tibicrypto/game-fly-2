@@ -27,6 +27,7 @@ class _GameScreenState extends State<GameScreen>
   bool _isRefueling = false;
   double _cameraX = 0;
   int _distance = 0;
+  GameState _lastState = GameState.playing;
 
   @override
   void initState() {
@@ -53,6 +54,23 @@ class _GameScreenState extends State<GameScreen>
     )..addListener(_gameLoop);
 
     _animationController.forward();
+
+    // Listen for state changes to handle continue
+    gameState.addListener(_handleStateChange);
+  }
+
+  void _handleStateChange() {
+    final gameState = Provider.of<GameStateManager>(context, listen: false);
+
+    // Check if we're resuming from game over (continue button)
+    if (_lastState == GameState.gameOver &&
+        gameState.state == GameState.playing) {
+      // Reset physics for continue
+      _physics.resetForContinue();
+      _animationController.forward();
+    }
+
+    _lastState = gameState.state;
   }
 
   void _gameLoop() {
@@ -150,6 +168,8 @@ class _GameScreenState extends State<GameScreen>
 
   @override
   void dispose() {
+    final gameState = Provider.of<GameStateManager>(context, listen: false);
+    gameState.removeListener(_handleStateChange);
     _animationController.dispose();
     super.dispose();
   }
@@ -569,16 +589,58 @@ class GamePainter extends CustomPainter {
   }
 
   void _drawClouds(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey[300]!.withValues(alpha: 0.5)
-      ..style = PaintingStyle.fill;
+    // Draw danger zone background
+    final dangerZonePaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.red.withValues(alpha: 0.15),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, 100));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, 100), dangerZonePaint);
 
-    // Draw cloud layer at top
-    for (double x = 0; x < size.width; x += 80) {
-      canvas.drawCircle(
-        Offset(x, 50),
-        30,
-        paint,
+    // Draw detailed cloud layer
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.9)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+    final cloudShadowPaint = Paint()
+      ..color = Colors.grey[400]!.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    // Draw multiple cloud puffs to create a cloud ceiling
+    for (double x = -20; x < size.width + 20; x += 60) {
+      double offset = (x / 60).floor() % 2 == 0 ? 10 : 0;
+
+      // Cloud shadow
+      canvas.drawCircle(Offset(x + 2, 72 + offset), 28, cloudShadowPaint);
+      canvas.drawCircle(Offset(x + 32, 68 + offset), 25, cloudShadowPaint);
+      canvas.drawCircle(Offset(x + 17, 82 + offset), 22, cloudShadowPaint);
+
+      // Main cloud puffs
+      canvas.drawCircle(Offset(x, 70 + offset), 28, cloudPaint);
+      canvas.drawCircle(Offset(x + 30, 66 + offset), 25, cloudPaint);
+      canvas.drawCircle(Offset(x + 15, 80 + offset), 22, cloudPaint);
+      canvas.drawCircle(Offset(x + 45, 75 + offset), 20, cloudPaint);
+    }
+
+    // Draw warning line at cloud ceiling height
+    final warningLinePaint = Paint()
+      ..color = Colors.red.withValues(alpha: 0.4)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final dashWidth = 10.0;
+    final dashSpace = 5.0;
+    for (double x = 0; x < size.width; x += dashWidth + dashSpace) {
+      canvas.drawLine(
+        Offset(x, 95),
+        Offset(x + dashWidth, 95),
+        warningLinePaint,
       );
     }
   }
@@ -610,36 +672,134 @@ class GamePainter extends CustomPainter {
     double screenX = (physics.planeX - cameraX) * scaleX;
     double screenY = size.height - (physics.planeY * scaleY);
 
-    final planePaint = Paint()
-      ..color = physics.hasLightningDamage ? Colors.red : Colors.blue
+    // Shadow
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(screenX - 2, screenY + 3), width: 50, height: 15),
+      shadowPaint,
+    );
+
+    final baseColor = physics.hasLightningDamage ? Colors.red : Colors.blue;
+
+    // Fuselage (main body) with gradient
+    final fuselagePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [baseColor.shade700, baseColor.shade400],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(screenX - 30, screenY - 8, 35, 16));
+
+    final fuselagePath = Path();
+    fuselagePath.moveTo(screenX + 5, screenY); // Nose
+    fuselagePath.quadraticBezierTo(
+        screenX + 3, screenY - 8, screenX - 10, screenY - 8);
+    fuselagePath.lineTo(screenX - 25, screenY - 6);
+    fuselagePath.lineTo(screenX - 30, screenY);
+    fuselagePath.lineTo(screenX - 25, screenY + 6);
+    fuselagePath.lineTo(screenX - 10, screenY + 8);
+    fuselagePath.quadraticBezierTo(
+        screenX + 3, screenY + 8, screenX + 5, screenY);
+    fuselagePath.close();
+    canvas.drawPath(fuselagePath, fuselagePaint);
+
+    // Windows
+    final windowPaint = Paint()
+      ..color = Colors.lightBlue.shade100.withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
+    for (int i = 0; i < 3; i++) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(screenX - 8 - i * 7, screenY - 3),
+          width: 4,
+          height: 5,
+        ),
+        windowPaint,
+      );
+    }
 
-    // Draw simple plane shape
-    final planePath = Path();
-    planePath.moveTo(screenX, screenY);
-    planePath.lineTo(screenX - 20, screenY + 5);
-    planePath.lineTo(screenX - 25, screenY);
-    planePath.lineTo(screenX - 20, screenY - 5);
-    planePath.close();
+    // Main wings
+    final wingPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [baseColor.shade600, baseColor.shade300],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(Rect.fromLTWH(screenX - 20, screenY - 20, 10, 40));
 
-    // Wings
-    planePath.moveTo(screenX - 15, screenY);
-    planePath.lineTo(screenX - 15, screenY - 15);
-    planePath.lineTo(screenX - 12, screenY);
-    planePath.lineTo(screenX - 15, screenY + 15);
-    planePath.close();
+    final wingPath = Path();
+    wingPath.moveTo(screenX - 15, screenY);
+    wingPath.lineTo(screenX - 18, screenY - 22);
+    wingPath.lineTo(screenX - 12, screenY - 18);
+    wingPath.lineTo(screenX - 10, screenY);
+    wingPath.close();
+    canvas.drawPath(wingPath, wingPaint);
 
-    canvas.drawPath(planePath, planePaint);
+    wingPath.reset();
+    wingPath.moveTo(screenX - 15, screenY);
+    wingPath.lineTo(screenX - 18, screenY + 22);
+    wingPath.lineTo(screenX - 12, screenY + 18);
+    wingPath.lineTo(screenX - 10, screenY);
+    wingPath.close();
+    canvas.drawPath(wingPath, wingPaint);
 
-    // Engine flame
+    // Tail
+    final tailPath = Path();
+    tailPath.moveTo(screenX - 28, screenY);
+    tailPath.lineTo(screenX - 32, screenY - 12);
+    tailPath.lineTo(screenX - 26, screenY - 10);
+    tailPath.close();
+    canvas.drawPath(tailPath, wingPaint);
+
+    // Cockpit highlight
+    final cockpitPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(screenX + 2, screenY - 4), width: 6, height: 8),
+      cockpitPaint,
+    );
+
+    // Outline for definition
+    final outlinePaint = Paint()
+      ..color = baseColor.shade900
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(fuselagePath, outlinePaint);
+
+    // Engine flame with particles
     if (isRefueling || physics.velocityY > 0) {
       final flamePaint = Paint()
-        ..color = Colors.orange
-        ..style = PaintingStyle.fill;
+        ..color = Colors.orange.withValues(alpha: 0.8)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
-      canvas.drawCircle(Offset(screenX - 25, screenY), 8, flamePaint);
-      canvas.drawCircle(
-          Offset(screenX - 30, screenY), 6, Paint()..color = Colors.yellow);
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(screenX - 32, screenY), width: 16, height: 12),
+        flamePaint,
+      );
+
+      final innerFlamePaint = Paint()
+        ..color = Colors.yellow.withValues(alpha: 0.9)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(screenX - 30, screenY), width: 10, height: 8),
+        innerFlamePaint,
+      );
+
+      // Flame particles
+      final particlePaint = Paint()
+        ..color = Colors.orange.withValues(alpha: 0.5);
+      for (int i = 0; i < 3; i++) {
+        canvas.drawCircle(
+          Offset(screenX - 38 - i * 3, screenY + (i % 2 == 0 ? 2 : -2)),
+          2,
+          particlePaint,
+        );
+      }
     }
   }
 
@@ -726,111 +886,317 @@ class GamePainter extends CustomPainter {
 
   void _drawBird(
       Canvas canvas, double x, double y, double width, double height) {
-    final paint = Paint()
-      ..color = Colors.black
+    // Bird body
+    final bodyPaint = Paint()
+      ..color = Colors.brown.shade800
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(x + width / 2, y),
+          width: width * 0.3,
+          height: height * 0.4),
+      bodyPaint,
+    );
+
+    // Wings with gradient
+    final wingPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.brown.shade700, Colors.brown.shade400],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(x, y - height / 2, width, height));
+
+    final leftWingPath = Path();
+    leftWingPath.moveTo(x + width / 2, y);
+    leftWingPath.quadraticBezierTo(
+        x + width * 0.2, y - height * 0.6, x, y - height * 0.4);
+    leftWingPath.quadraticBezierTo(
+        x + width * 0.15, y - height * 0.2, x + width / 2, y);
+    leftWingPath.close();
+    canvas.drawPath(leftWingPath, wingPaint);
+
+    final rightWingPath = Path();
+    rightWingPath.moveTo(x + width / 2, y);
+    rightWingPath.quadraticBezierTo(
+        x + width * 0.8, y - height * 0.6, x + width, y - height * 0.4);
+    rightWingPath.quadraticBezierTo(
+        x + width * 0.85, y - height * 0.2, x + width / 2, y);
+    rightWingPath.close();
+    canvas.drawPath(rightWingPath, wingPaint);
+
+    // Wing outline
+    final outlinePaint = Paint()
+      ..color = Colors.black87
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 1.5;
+    canvas.drawPath(leftWingPath, outlinePaint);
+    canvas.drawPath(rightWingPath, outlinePaint);
 
-    // Bird "V" shape
-    final path = Path();
-    path.moveTo(x, y - height / 2);
-    path.lineTo(x + width / 2, y);
-    path.lineTo(x + width, y - height / 2);
-
-    canvas.drawPath(path, paint);
+    // Beak
+    final beakPaint = Paint()
+      ..color = Colors.orange.shade700
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(x + width / 2 + 3, y), 2, beakPaint);
   }
 
   void _drawMissile(
       Canvas canvas, double x, double y, double width, double height) {
+    // Missile body with gradient
     final bodyPaint = Paint()
-      ..color = Colors.red
-      ..style = PaintingStyle.fill;
+      ..shader = LinearGradient(
+        colors: [Colors.red.shade700, Colors.red.shade400],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(x, y - height / 2, width * 0.7, height));
 
-    // Missile body
-    canvas.drawRect(
-      Rect.fromLTWH(x, y - height / 2, width * 0.7, height),
-      bodyPaint,
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(x, y - height / 2, width * 0.65, height),
+      const Radius.circular(3),
     );
+    canvas.drawRRect(bodyRect, bodyPaint);
 
-    // Missile nose cone
+    // Missile nose cone with gradient
     final nosePaint = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.fill;
+      ..shader = LinearGradient(
+        colors: [Colors.yellow.shade700, Colors.yellow.shade300],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(Rect.fromLTWH(
+          x + width * 0.65, y - height / 2, width * 0.35, height));
 
     final nosePath = Path();
-    nosePath.moveTo(x + width * 0.7, y - height / 2);
+    nosePath.moveTo(x + width * 0.65, y - height / 2);
     nosePath.lineTo(x + width, y);
-    nosePath.lineTo(x + width * 0.7, y + height / 2);
+    nosePath.lineTo(x + width * 0.65, y + height / 2);
     nosePath.close();
-
     canvas.drawPath(nosePath, nosePaint);
 
-    // Flame trail
-    final flamePaint = Paint()
-      ..color = Colors.orange.withValues(alpha: 0.7)
+    // Fins
+    final finPaint = Paint()
+      ..color = Colors.grey.shade800
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(Offset(x - 5, y), 8, flamePaint);
+    final topFinPath = Path();
+    topFinPath.moveTo(x + width * 0.3, y - height / 2);
+    topFinPath.lineTo(x + width * 0.35, y - height * 0.8);
+    topFinPath.lineTo(x + width * 0.45, y - height / 2);
+    topFinPath.close();
+    canvas.drawPath(topFinPath, finPaint);
+
+    final bottomFinPath = Path();
+    bottomFinPath.moveTo(x + width * 0.3, y + height / 2);
+    bottomFinPath.lineTo(x + width * 0.35, y + height * 0.8);
+    bottomFinPath.lineTo(x + width * 0.45, y + height / 2);
+    bottomFinPath.close();
+    canvas.drawPath(bottomFinPath, finPaint);
+
+    // Enhanced flame trail
+    final outerFlamePaint = Paint()
+      ..color = Colors.orange.withValues(alpha: 0.6)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(x - 8, y), width: 20, height: height * 0.6),
+      outerFlamePaint,
+    );
+
+    final innerFlamePaint = Paint()
+      ..color = Colors.yellow.withValues(alpha: 0.8)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(x - 5, y), width: 12, height: height * 0.4),
+      innerFlamePaint,
+    );
+
+    // Flame particles
+    final particlePaint = Paint()..color = Colors.orange.withValues(alpha: 0.5);
+    for (int i = 0; i < 4; i++) {
+      canvas.drawCircle(
+        Offset(x - 15 - i * 4, y + (i % 2 == 0 ? 3 : -3)),
+        2,
+        particlePaint,
+      );
+    }
+
+    // Outline
+    final outlinePaint = Paint()
+      ..color = Colors.black87
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawPath(nosePath, outlinePaint);
   }
 
   void _drawOtherPlane(
       Canvas canvas, double x, double y, double width, double height) {
-    final paint = Paint()
-      ..color = Colors.grey
-      ..style = PaintingStyle.fill;
-
-    // Plane body
-    final path = Path();
-    path.moveTo(x + width, y);
-    path.lineTo(x + width * 0.2, y + height / 3);
-    path.lineTo(x, y);
-    path.lineTo(x + width * 0.2, y - height / 3);
-    path.close();
-
-    canvas.drawPath(path, paint);
-
-    // Wings
-    canvas.drawRect(
-      Rect.fromLTWH(x + width * 0.3, y - height / 2, width * 0.1, height),
-      paint,
+    // Shadow
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.2)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(x + width / 2 + 2, y + 2),
+          width: width * 0.8,
+          height: height * 0.3),
+      shadowPaint,
     );
+
+    // Plane body with gradient
+    final bodyPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.grey.shade700, Colors.grey.shade400],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(x, y - height / 3, width, height * 0.66));
+
+    final bodyPath = Path();
+    bodyPath.moveTo(x + width, y);
+    bodyPath.quadraticBezierTo(
+        x + width * 0.8, y + height * 0.35, x + width * 0.2, y + height * 0.35);
+    bodyPath.lineTo(x, y);
+    bodyPath.lineTo(x + width * 0.2, y - height * 0.35);
+    bodyPath.quadraticBezierTo(
+        x + width * 0.8, y - height * 0.35, x + width, y);
+    bodyPath.close();
+    canvas.drawPath(bodyPath, bodyPaint);
+
+    // Wings with gradient
+    final wingPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.grey.shade600, Colors.grey.shade300],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(
+          Rect.fromLTWH(x + width * 0.3, y - height / 2, width * 0.15, height));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+            x + width * 0.35, y - height * 0.55, width * 0.12, height * 1.1),
+        const Radius.circular(2),
+      ),
+      wingPaint,
+    );
+
+    // Windows
+    final windowPaint = Paint()
+      ..color = Colors.lightBlue.shade100.withValues(alpha: 0.7);
+    for (int i = 0; i < 2; i++) {
+      canvas.drawCircle(
+        Offset(x + width * 0.6 + i * width * 0.15, y),
+        3,
+        windowPaint,
+      );
+    }
+
+    // Tail
+    final tailPath = Path();
+    tailPath.moveTo(x + width * 0.15, y);
+    tailPath.lineTo(x, y - height * 0.4);
+    tailPath.lineTo(x + width * 0.1, y - height * 0.35);
+    tailPath.close();
+    canvas.drawPath(tailPath, wingPaint);
+
+    // Outline
+    final outlinePaint = Paint()
+      ..color = Colors.grey.shade900
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawPath(bodyPath, outlinePaint);
   }
 
   void _drawAlien(
       Canvas canvas, double x, double y, double width, double height) {
-    final ufoBodyPaint = Paint()
-      ..color = Colors.purple
-      ..style = PaintingStyle.fill;
+    // UFO dome with gradient
+    final domePaint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.purple.shade300, Colors.purple.shade700],
+        center: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(
+          x + width * 0.2, y - height * 0.7, width * 0.6, height * 0.5));
 
-    // UFO dome
     canvas.drawOval(
       Rect.fromLTWH(
           x + width * 0.2, y - height * 0.7, width * 0.6, height * 0.5),
-      ufoBodyPaint,
+      domePaint,
     );
 
-    // UFO base
-    final basePaint = Paint()
-      ..color = Colors.purple[300]!
+    // Dome highlight
+    final highlightPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.4)
       ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromLTWH(
+          x + width * 0.35, y - height * 0.65, width * 0.2, height * 0.2),
+      highlightPaint,
+    );
+
+    // UFO base with gradient
+    final basePaint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.purple.shade200, Colors.purple.shade500],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(x, y - height * 0.3, width, height * 0.4));
 
     canvas.drawOval(
       Rect.fromLTWH(x, y - height * 0.3, width, height * 0.4),
       basePaint,
     );
 
-    // Lights
-    final lightPaint = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.fill;
+    // Metal ring
+    final ringPaint = Paint()
+      ..color = Colors.grey.shade400
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawOval(
+      Rect.fromLTWH(
+          x + width * 0.1, y - height * 0.25, width * 0.8, height * 0.2),
+      ringPaint,
+    );
 
-    for (int i = 0; i < 3; i++) {
+    // Pulsing lights with glow
+    for (int i = 0; i < 4; i++) {
+      final glowPaint = Paint()
+        ..color = Colors.yellow.withValues(alpha: 0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
       canvas.drawCircle(
-        Offset(x + width * (0.25 + i * 0.25), y),
+        Offset(x + width * (0.15 + i * 0.23), y - height * 0.1),
+        6,
+        glowPaint,
+      );
+
+      final lightPaint = Paint()
+        ..color = i % 2 == 0 ? Colors.yellow : Colors.cyan
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(
+        Offset(x + width * (0.15 + i * 0.23), y - height * 0.1),
         3,
         lightPaint,
       );
     }
+
+    // Tractor beam
+    final beamPaint = Paint()
+      ..color = Colors.cyan.withValues(alpha: 0.2)
+      ..style = PaintingStyle.fill;
+    final beamPath = Path();
+    beamPath.moveTo(x + width * 0.4, y + height * 0.1);
+    beamPath.lineTo(x + width * 0.6, y + height * 0.1);
+    beamPath.lineTo(x + width * 0.7, y + height * 0.5);
+    beamPath.lineTo(x + width * 0.3, y + height * 0.5);
+    beamPath.close();
+    canvas.drawPath(beamPath, beamPaint);
+
+    // Outline
+    final outlinePaint = Paint()
+      ..color = Colors.purple.shade900
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawOval(
+      Rect.fromLTWH(x, y - height * 0.3, width, height * 0.4),
+      outlinePaint,
+    );
   }
 
   @override

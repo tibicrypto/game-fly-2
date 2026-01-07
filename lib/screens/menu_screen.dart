@@ -3,9 +3,25 @@ import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../localization/app_localizations.dart';
 import '../localization/language_provider.dart';
+import 'leaderboard_screen.dart';
 
-class MenuScreen extends StatelessWidget {
+class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
+
+  @override
+  State<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends State<MenuScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load leaderboard when menu screen is shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final gameState = Provider.of<GameStateManager>(context, listen: false);
+      gameState.loadLeaderboard();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,6 +189,23 @@ class MenuScreen extends StatelessWidget {
                     Icons.flight_takeoff,
                     Colors.green,
                     () => gameState.setState(GameState.selectCargo),
+                  ),
+
+                  SizedBox(height: size.height * 0.015),
+
+                  _buildMenuButton(
+                    context,
+                    localizations.leaderboard,
+                    Icons.emoji_events,
+                    Colors.amber,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LeaderboardScreen(),
+                        ),
+                      );
+                    },
                   ),
 
                   SizedBox(height: size.height * 0.015),

@@ -74,6 +74,50 @@ class GameOverScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: size.height * 0.05),
+
+                  // New Record Banner
+                  if (gameState.isNewRecord)
+                    Container(
+                      width: size.width * 0.9,
+                      padding: EdgeInsets.all(size.width * 0.04),
+                      margin: EdgeInsets.only(bottom: size.height * 0.02),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.orange, Colors.deepOrange],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            localizations.newRecord,
+                            style: TextStyle(
+                              fontSize: size.width * 0.06,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: size.height * 0.005),
+                          Text(
+                            localizations.newRecordMessage,
+                            style: TextStyle(
+                              fontSize: size.width * 0.035,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Game Over Icon
                   Icon(icon, size: size.width * 0.2, color: titleColor),
                   SizedBox(height: size.height * 0.02),
@@ -228,8 +272,10 @@ class GameOverScreen extends StatelessWidget {
                   SizedBox(
                     width: size.width * 0.7,
                     child: ElevatedButton(
-                      onPressed: () =>
-                          gameState.setState(GameState.selectCargo),
+                      onPressed: () {
+                        gameState.clearNewRecordFlag();
+                        gameState.setState(GameState.selectCargo);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         padding: EdgeInsets.symmetric(
@@ -262,7 +308,10 @@ class GameOverScreen extends StatelessWidget {
                   SizedBox(
                     width: size.width * 0.7,
                     child: ElevatedButton(
-                      onPressed: () => gameState.returnToMenu(),
+                      onPressed: () {
+                        gameState.clearNewRecordFlag();
+                        gameState.returnToMenu();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: EdgeInsets.symmetric(

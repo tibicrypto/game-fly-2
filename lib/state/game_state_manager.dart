@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../config/game_config.dart';
 
 enum GameState {
@@ -27,6 +29,8 @@ class GameStateManager extends ChangeNotifier {
   GameOverReason? _gameOverReason;
   bool _cargoJettisoned = false;
   bool _hasUsedContinue = false;
+  List<GameRecord> _leaderboard = [];
+  bool _isNewRecord = false;
 
   // Getters
   GameState get state => _state;
@@ -39,6 +43,8 @@ class GameStateManager extends ChangeNotifier {
   GameOverReason? get gameOverReason => _gameOverReason;
   bool get cargoJettisoned => _cargoJettisoned;
   bool get hasUsedContinue => _hasUsedContinue;
+  List<GameRecord> get leaderboard => _leaderboard;
+  bool get isNewRecord => _isNewRecord;
 
   void setState(GameState newState) {
     _state = newState;
@@ -110,6 +116,9 @@ class GameStateManager extends ChangeNotifier {
       _money += distanceReward;
     }
 
+    // Check if this is a new record
+    _isNewRecord = _checkAndSaveRecord(distance);
+
     notifyListeners();
   }
 
@@ -152,4 +161,81 @@ class GameStateManager extends ChangeNotifier {
     _state = GameState.menu;
     notifyListeners();
   }
+
+  Future<void> loadLeaderboard() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? leaderboardJson = prefs.getString('leaderboard');
+    if (leaderboardJson != null) {
+      final List<dynamic> decoded = jsonDecode(leaderboardJson);
+      _leaderboard = decoded.map((e) => GameRecord.fromJson(e)).toList();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveLeaderboard() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded =
+        jsonEncode(_leaderboard.map((e) => e.toJson()).toList());
+    await prefs.setString('leaderboard', encoded);
+  }
+
+  bool _checkAndSaveRecord(int distance) {
+    // Create new record
+    final newRecord = GameRecord(
+      distance: distance,
+      cargo: _selectedCargo?.name ?? 'None',
+      plane: _selectedPlane.name,
+      date: DateTime.now(),
+    );
+
+    // Add to leaderboard
+    _leaderboard.add(newRecord);
+
+    // Sort by distance (highest first)
+    _leaderboard.sort((a, b) => b.distance.compareTo(a.distance));
+
+    // Keep only top 5
+    if (_leaderboard.length > 5) {
+      _leaderboard = _leaderboard.sublist(0, 5);
+    }
+
+    // Save to SharedPreferences
+    _saveLeaderboard();
+
+    // Check if this is the new best record
+    return _leaderboard.isNotEmpty && _leaderboard[0] == newRecord;
+  }
+
+  void clearNewRecordFlag() {
+    _isNewRecord = false;
+    notifyListeners();
+  }
+}
+
+class GameRecord {
+  final int distance;
+  final String cargo;
+  final String plane;
+  final DateTime date;
+
+  GameRecord({
+    required this.distance,
+    required this.cargo,
+    required this.plane,
+    required this.date,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'distance': distance,
+        'cargo': cargo,
+        'plane': plane,
+        'date': date.toIso8601String(),
+      };
+
+  factory GameRecord.fromJson(Map<String, dynamic> json) => GameRecord(
+        distance: json['distance'] as int,
+        cargo: json['cargo'] as String,
+        plane: json['plane'] as String,
+        date: DateTime.parse(json['date'] as String),
+      );
 }

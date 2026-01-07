@@ -193,6 +193,26 @@ class AppLocalizations {
       ? '(Chỉ 1 lần mỗi chuyến bay)'
       : '(One time per flight)';
 
+  // Leaderboard
+  String get leaderboard =>
+      language == AppLanguage.vietnamese ? 'BẢNG XẾP HẠNG' : 'LEADERBOARD';
+  String get newRecord => language == AppLanguage.vietnamese
+      ? '🎉 KỶ LỤC MỚI! 🎉'
+      : '🎉 NEW RECORD! 🎉';
+  String get congratulations =>
+      language == AppLanguage.vietnamese ? 'CHÚC MỪNG!' : 'CONGRATULATIONS!';
+  String get newRecordMessage => language == AppLanguage.vietnamese
+      ? 'Bạn đã phá vỡ kỷ lục cá nhân!'
+      : 'You broke your personal record!';
+  String get topFlights =>
+      language == AppLanguage.vietnamese ? 'Top 5 Chuyến Bay' : 'Top 5 Flights';
+  String get rank => language == AppLanguage.vietnamese ? 'Hạng' : 'Rank';
+  String get noRecordsYet => language == AppLanguage.vietnamese
+      ? 'Chưa có kỷ lục nào.\nHãy bắt đầu bay!'
+      : 'No records yet.\nStart flying!';
+  String get plane => language == AppLanguage.vietnamese ? 'Máy bay' : 'Plane';
+  String get cargo => language == AppLanguage.vietnamese ? 'Hàng' : 'Cargo';
+
   // Plane Selection Screen
   String get selectPlane =>
       language == AppLanguage.vietnamese ? 'CHỌN MÁY BAY' : 'SELECT PLANE';
