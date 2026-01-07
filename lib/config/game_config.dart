@@ -67,13 +67,6 @@ class CargoClass {
 
   static const List<CargoClass> all = [
     CargoClass(
-      type: CargoType.mail,
-      name: 'Mail (Class C)',
-      weight: 10.0,
-      reward: 100,
-      description: 'Light delivery - Easy',
-    ),
-    CargoClass(
       type: CargoType.food,
       name: 'Food (Class B)',
       weight: 40.0,

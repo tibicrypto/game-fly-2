@@ -187,6 +187,11 @@ class AppLocalizations {
       language == AppLanguage.vietnamese ? 'Tổng tiền' : 'Total Money';
   String get tryAgain =>
       language == AppLanguage.vietnamese ? 'THỬ LẠI' : 'TRY AGAIN';
+  String get continueFlying =>
+      language == AppLanguage.vietnamese ? 'TIẾP TỤC BAY' : 'CONTINUE FLYING';
+  String get continueHint => language == AppLanguage.vietnamese
+      ? '(Chỉ 1 lần mỗi chuyến bay)'
+      : '(One time per flight)';
 
   // Plane Selection Screen
   String get selectPlane =>

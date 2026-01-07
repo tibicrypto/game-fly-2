@@ -174,6 +174,56 @@ class GameOverScreen extends StatelessWidget {
 
                   SizedBox(height: size.height * 0.04),
 
+                  // Continue button (one-time, crash only)
+                  if (gameState.gameOverReason == GameOverReason.crashed &&
+                      !gameState.hasUsedContinue)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: size.height * 0.015),
+                      child: SizedBox(
+                        width: size.width * 0.7,
+                        child: ElevatedButton(
+                          onPressed: () => gameState.continueGame(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.08,
+                              vertical: size.height * 0.02,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.favorite, size: size.width * 0.06),
+                                  SizedBox(width: size.width * 0.02),
+                                  Text(
+                                    localizations.continueFlying,
+                                    style: TextStyle(
+                                      fontSize: size.width * 0.045,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: size.height * 0.005),
+                              Text(
+                                localizations.continueHint,
+                                style: TextStyle(
+                                  fontSize: size.width * 0.028,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Buttons
                   SizedBox(
                     width: size.width * 0.7,
