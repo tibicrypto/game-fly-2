@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'state/game_state_manager.dart';
 import 'localization/language_provider.dart';
 import 'localization/app_localizations.dart';
@@ -14,15 +15,15 @@ import 'screens/game_over_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Force portrait mode and hide system UI
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -66,7 +67,7 @@ class _SkyHaulerAppState extends State<SkyHaulerApp> {
           theme: ThemeData(
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: const Color(0xFF87CEEB),
-            fontFamily: 'Courier',
+            textTheme: GoogleFonts.robotoTextTheme(),
           ),
           debugShowCheckedModeBanner: false,
           localizationsDelegates: [
