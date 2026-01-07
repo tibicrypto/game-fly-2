@@ -7,6 +7,7 @@ import '../engine/terrain_generator.dart';
 import '../engine/obstacle_generator.dart';
 import '../state/game_state_manager.dart';
 import '../localization/app_localizations.dart';
+import '../services/sound_manager.dart';
 import 'package:provider/provider.dart';
 
 class GameScreen extends StatefulWidget {
@@ -57,6 +58,9 @@ class _GameScreenState extends State<GameScreen>
 
     // Listen for state changes to handle continue
     gameState.addListener(_handleStateChange);
+    
+    // Play gameplay music
+    SoundManager().playMusic(SoundManager.gameplayMusic);
   }
 
   void _handleStateChange() {
@@ -96,6 +100,7 @@ class _GameScreenState extends State<GameScreen>
       // Check collision with terrain
       double groundHeight = _terrain.getHeight(_physics.planeX);
       if (_physics.isCrashed(groundHeight)) {
+        SoundManager().playSfx(SoundManager.crash);
         _endGame(GameOverReason.crashed);
       }
 
@@ -103,6 +108,7 @@ class _GameScreenState extends State<GameScreen>
       for (var obstacle in _obstacles.obstacles) {
         if (_physics.checkObstacleCollision(obstacle)) {
           obstacle.isActive = false;
+          SoundManager().playSfx(SoundManager.crash);
           _endGame(GameOverReason.crashed);
           break;
         }
@@ -110,6 +116,7 @@ class _GameScreenState extends State<GameScreen>
 
       // Check out of fuel
       if (_physics.isOutOfFuel()) {
+        SoundManager().playSfx(SoundManager.warning);
         _endGame(GameOverReason.outOfFuel);
       }
 
@@ -139,6 +146,7 @@ class _GameScreenState extends State<GameScreen>
   void _handleJettison() {
     final gameState = Provider.of<GameStateManager>(context, listen: false);
     if (gameState.selectedCargo != null && !gameState.cargoJettisoned) {
+      SoundManager().playSfx(SoundManager.whoosh);
       setState(() {
         gameState.jettisonCargo();
         _physics = PhysicsEngine(

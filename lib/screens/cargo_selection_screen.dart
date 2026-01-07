@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
 import '../localization/app_localizations.dart';
+import '../services/sound_manager.dart';
 
 class CargoSelectionScreen extends StatelessWidget {
   const CargoSelectionScreen({super.key});
@@ -18,7 +19,10 @@ class CargoSelectionScreen extends StatelessWidget {
         title: Text(localizations.selectContract),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => gameState.returnToMenu(),
+          onPressed: () {
+            SoundManager().playSfx(SoundManager.buttonClick);
+            gameState.returnToMenu();
+          },
         ),
       ),
       body: Container(
@@ -76,6 +80,7 @@ class CargoSelectionScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
+          SoundManager().playSfx(SoundManager.cargoPickup);
           gameState.selectCargo(cargo);
           gameState.setState(GameState.selectPlane);
         },

@@ -12,9 +12,13 @@ import 'screens/cargo_selection_screen.dart';
 import 'screens/plane_selection_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/game_over_screen.dart';
+import 'services/sound_manager.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize sound manager
+  await SoundManager().initialize();
 
   // Force portrait mode and hide system UI
   SystemChrome.setPreferredOrientations([

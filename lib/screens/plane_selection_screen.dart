@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../config/game_config.dart';
 import '../localization/app_localizations.dart';
+import '../services/sound_manager.dart';
 
 class PlaneSelectionScreen extends StatelessWidget {
   const PlaneSelectionScreen({super.key});
@@ -18,7 +19,10 @@ class PlaneSelectionScreen extends StatelessWidget {
         title: Text(localizations.selectPlane),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => gameState.setState(GameState.selectCargo),
+          onPressed: () {
+            SoundManager().playSfx(SoundManager.buttonClick);
+            gameState.setState(GameState.selectCargo);
+          },
         ),
       ),
       body: Container(
@@ -99,7 +103,10 @@ class PlaneSelectionScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
-                  onPressed: () => gameState.startGame(),
+                  onPressed: () {
+                    SoundManager().playSfx(SoundManager.planeEngine);
+                    gameState.startGame();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(
@@ -149,9 +156,13 @@ class PlaneSelectionScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: isOwned
-            ? () => gameState.selectPlane(plane)
+            ? () {
+                SoundManager().playSfx(SoundManager.buttonClick);
+                gameState.selectPlane(plane);
+              }
             : canBuy
                 ? () {
+                    SoundManager().playSfx(SoundManager.buttonClick);
                     final localizations = AppLocalizations.of(context);
                     showDialog(
                       context: context,

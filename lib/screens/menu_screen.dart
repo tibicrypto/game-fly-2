@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../localization/app_localizations.dart';
 import '../localization/language_provider.dart';
+import '../services/sound_manager.dart';
 import 'leaderboard_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class _MenuScreenState extends State<MenuScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final gameState = Provider.of<GameStateManager>(context, listen: false);
       gameState.loadLeaderboard();
+      // Play menu music
+      SoundManager().playMusic(SoundManager.menuMusic);
     });
   }
 
@@ -52,28 +55,45 @@ class _MenuScreenState extends State<MenuScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: size.height * 0.02),
-                  // Language toggle button
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      onPressed: () => languageProvider.toggleLanguage(),
-                      icon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.language, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text(
-                            languageProvider.currentLanguage ==
-                                    AppLanguage.english
-                                ? 'EN'
-                                : 'VI',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                  // Top buttons row: Language and Sound
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Sound settings button
+                      IconButton(
+                        onPressed: () => _showSoundSettings(context),
+                        icon: Icon(
+                          SoundManager().isMusicEnabled || SoundManager().isSfxEnabled
+                              ? Icons.volume_up
+                              : Icons.volume_off,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
-                    ),
+                      // Language toggle button
+                      IconButton(
+                        onPressed: () {
+                          SoundManager().playSfx(SoundManager.buttonClick);
+                          languageProvider.toggleLanguage();
+                        },
+                        icon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.language, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              languageProvider.currentLanguage ==
+                                      AppLanguage.english
+                                  ? 'EN'
+                                  : 'VI',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   // Title
                   Icon(
@@ -248,7 +268,10 @@ class _MenuScreenState extends State<MenuScreen> {
     return SizedBox(
       width: size.width * 0.85,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: () {
+          SoundManager().playSfx(SoundManager.buttonClick);
+          onPressed();
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           padding: EdgeInsets.symmetric(
@@ -336,4 +359,121 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
     );
   }
-}
+
+  void _showSoundSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.settings),
+                SizedBox(width: 8),
+                Text('Sound Settings'),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Music toggle
+                SwitchListTile(
+                  title: Text('Music'),
+                  subtitle: Text('Background music'),
+                  value: SoundManager().isMusicEnabled,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      SoundManager().toggleMusic();
+                      if (value) {
+                        SoundManager().playMusic(SoundManager.menuMusic);
+                      }
+                    });
+                  },
+                  secondary: Icon(
+                    SoundManager().isMusicEnabled 
+                        ? Icons.music_note 
+                        : Icons.music_off,
+                  ),
+                ),
+                // Music volume slider
+                if (SoundManager().isMusicEnabled)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.volume_down, size: 20),
+                        Expanded(
+                          child: Slider(
+                            value: SoundManager().musicVolume,
+                            onChanged: (value) {
+                              setDialogState(() {
+                                SoundManager().setMusicVolume(value);
+                              });
+                            },
+                            min: 0.0,
+                            max: 1.0,
+                          ),
+                        ),
+                        Icon(Icons.volume_up, size: 20),
+                      ],
+                    ),
+                  ),
+                Divider(),
+                // SFX toggle
+                SwitchListTile(
+                  title: Text('Sound Effects'),
+                  subtitle: Text('Game sound effects'),
+                  value: SoundManager().isSfxEnabled,
+                  onChanged: (value) {
+                    setDialogState(() {
+                      SoundManager().toggleSfx();
+                    });
+                    if (value) {
+                      SoundManager().playSfx(SoundManager.buttonClick);
+                    }
+                  },
+                  secondary: Icon(
+                    SoundManager().isSfxEnabled 
+                        ? Icons.volume_up 
+                        : Icons.volume_off,
+                  ),
+                ),
+                // SFX volume slider
+                if (SoundManager().isSfxEnabled)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Icon(Icons.volume_down, size: 20),
+                        Expanded(
+                          child: Slider(
+                            value: SoundManager().sfxVolume,
+                            onChanged: (value) {
+                              setDialogState(() {
+                                SoundManager().setSfxVolume(value);
+                              });
+                            },
+                            min: 0.0,
+                            max: 1.0,
+                          ),
+                        ),
+                        Icon(Icons.volume_up, size: 20),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  SoundManager().playSfx(SoundManager.buttonClick);
+                  Navigator.pop(context);
+                },
+                child: Text('Close'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }}

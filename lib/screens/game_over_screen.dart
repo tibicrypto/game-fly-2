@@ -2,9 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../state/game_state_manager.dart';
 import '../localization/app_localizations.dart';
+import '../services/sound_manager.dart';
 
-class GameOverScreen extends StatelessWidget {
+class GameOverScreen extends StatefulWidget {
   const GameOverScreen({super.key});
+
+  @override
+  State<GameOverScreen> createState() => _GameOverScreenState();
+}
+
+class _GameOverScreenState extends State<GameOverScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Stop music and play appropriate sound effect
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SoundManager().stopMusic();
+      final gameState = Provider.of<GameStateManager>(context, listen: false);
+      if (gameState.isNewRecord) {
+        SoundManager().playSfx(SoundManager.achievement);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +245,10 @@ class GameOverScreen extends StatelessWidget {
                       child: SizedBox(
                         width: size.width * 0.7,
                         child: ElevatedButton(
-                          onPressed: () => gameState.continueGame(),
+                          onPressed: () {
+                            SoundManager().playSfx(SoundManager.buttonClick);
+                            gameState.continueGame();
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             padding: EdgeInsets.symmetric(
@@ -273,6 +295,7 @@ class GameOverScreen extends StatelessWidget {
                     width: size.width * 0.7,
                     child: ElevatedButton(
                       onPressed: () {
+                        SoundManager().playSfx(SoundManager.buttonClick);
                         gameState.clearNewRecordFlag();
                         gameState.setState(GameState.selectCargo);
                       },
@@ -309,6 +332,7 @@ class GameOverScreen extends StatelessWidget {
                     width: size.width * 0.7,
                     child: ElevatedButton(
                       onPressed: () {
+                        SoundManager().playSfx(SoundManager.buttonClick);
                         gameState.clearNewRecordFlag();
                         gameState.returnToMenu();
                       },
