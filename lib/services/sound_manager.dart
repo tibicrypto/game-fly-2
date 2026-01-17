@@ -46,7 +46,7 @@ class SoundManager {
     
     try {
       await _sfxPlayer.stop();
-      await _sfxPlayer.play(AssetSource('sounds/$soundName.mp3'));
+      await _sfxPlayer.play(AssetSource('sounds/$soundName.wav'));
     } catch (e) {
       // Silently fail if sound file doesn't exist
     }
@@ -59,7 +59,7 @@ class SoundManager {
     try {
       await _musicPlayer.stop();
       await _musicPlayer.setReleaseMode(ReleaseMode.loop);
-      await _musicPlayer.play(AssetSource('sounds/$musicName.mp3'));
+      await _musicPlayer.play(AssetSource('sounds/$musicName.wav'));
     } catch (e) {
       // Silently fail if music file doesn't exist
     }
