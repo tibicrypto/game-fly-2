@@ -69,7 +69,11 @@ class _SkyHaulerAppState extends State<SkyHaulerApp> {
         return MaterialApp(
           title: _appTitle,
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.blue,
+              brightness: Brightness.light,
+            ),
             scaffoldBackgroundColor: const Color(0xFF87CEEB),
             textTheme: GoogleFonts.robotoTextTheme(),
           ),
